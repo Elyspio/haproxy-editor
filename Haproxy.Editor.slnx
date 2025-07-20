@@ -1,0 +1,8 @@
+﻿<Solution>
+	<Folder Name="/Adapters/">
+		<Project Path="Haproxy.Editor.Api\Haproxy.Editor.Adapters.Haproxy\Haproxy.Editor.Adapters.Haproxy.csproj" Type="Classic C#"/>
+	</Folder>
+	<Project Path="Haproxy.Editor.Api\Haproxy.Editor.Abstractions\Haproxy.Editor.Abstractions.csproj" Type="Classic C#"/>
+	<Project Path="Haproxy.Editor.Api\Haproxy.Editor.Core\Haproxy.Editor.Core.csproj" Type="Classic C#"/>
+	<Project Path="Haproxy.Editor.Api\Haproxy.Editor.WebApi\Haproxy.Editor.WebApi.csproj" Type="Classic C#"/>
+</Solution>
