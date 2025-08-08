@@ -1,13 +1,13 @@
-import { ActionCreatorWithPayload, ActionReducerMapBuilder, AsyncThunk, Draft } from "@reduxjs/toolkit";
+import { ActionReducerMapBuilder, AsyncThunk, Draft } from "@reduxjs/toolkit";
 import { PartialRecord, PromiseState } from "./utils.types";
 import { AppThunkParam, ExtraArgument } from "./utils.actions";
 import { StoreState } from "@store/store.reducers";
 
-export function setPromiseStatus<T, U extends string>(
-	builder: Pick<ActionReducerMapBuilder<T>, "addCase">,
-	thunk: AsyncThunk<unknown, unknown, AppThunkParam<ExtraArgument, StoreState>>,
-	getProps: (state: Draft<T>) => PartialRecord<U, PromiseState | undefined>,
-	prop: U,
+export function setPromiseStatus<Reducer, PropKey extends string, ActionPayload, ThunkArg>(
+	builder: Pick<ActionReducerMapBuilder<Reducer>, "addCase">,
+	thunk: AsyncThunk<ActionPayload, ThunkArg, AppThunkParam<ExtraArgument, StoreState>>,
+	getProps: (state: Draft<Reducer>) => PartialRecord<PropKey, PromiseState | undefined>,
+	prop: PropKey,
 	status: PromiseState[] = ["fulfilled", "pending", "rejected"]
 ) {
 	for (const promiseStatus of status) {

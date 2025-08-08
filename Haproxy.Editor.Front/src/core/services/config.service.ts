@@ -1,7 +1,9 @@
 import { inject, injectable } from "inversify";
 import { Api } from "@apis/api";
-import { HaproxyConfiguration } from "@apis/generated/api";
 import type { HaproxyConfigurationFront } from "@modules/config/config.types";
+import type { HaproxyConfiguration } from "@apis/generated";
+
+type ValidateConfigResult = { success: boolean; error?: string };
 
 @injectable()
 export class ConfigService {
@@ -22,11 +24,29 @@ export class ConfigService {
 	}
 
 	async updateConfig(config: HaproxyConfigurationFront) {
-		await this.api.v1.saveHaproxyConfig({
+		await this.api.v1.saveHaproxyConfig(this.convertToApi(config));
+	}
+
+	async validateConfig(config: HaproxyConfigurationFront): Promise<ValidateConfigResult> {
+		let success = false;
+		let error: string | undefined = undefined;
+		try {
+			await this.api.v1.validateHaproxyConfig(this.convertToApi(config));
+			success = true;
+		} catch (e: any) {
+			console.log("Configuration validation failed", e);
+			error = e.response?.data ?? "Unknown error";
+		}
+
+		return { success, error };
+	}
+
+	private convertToApi(config: HaproxyConfigurationFront): HaproxyConfiguration {
+		return {
 			global: config.global.split("\n"),
 			defaults: config.defaults.split("\n"),
 			frontends: Object.fromEntries(Object.entries(config.frontends).map(([key, value]) => [key, value.split("\n")])),
 			backends: Object.fromEntries(Object.entries(config.backends).map(([key, value]) => [key, value.split("\n")])),
-		});
+		};
 	}
 }

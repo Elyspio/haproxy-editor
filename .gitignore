@@ -13,3 +13,4 @@ front/.bit
 bin
 obj
 */apis/generated/docs/
+*.user

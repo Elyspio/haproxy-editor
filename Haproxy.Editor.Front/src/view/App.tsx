@@ -9,10 +9,8 @@ import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 import { Provider } from "react-redux";
 import { FrontendCreate } from "@components/frontend/Frontend.Create";
 import { GlobalEdit } from "@components/Global.Edit";
-import { useEffect } from "react";
-import { useAppDispatch } from "@store/utils/utils.selectors";
-import { startApp } from "@modules/config/config.async.actions";
 import { DefaultEdit } from "@components/Default.Edit";
+import { ToastContainer } from "react-toastify";
 
 const router = createBrowserRouter(
 	createRoutesFromChildren(
@@ -67,6 +65,7 @@ export const App = () => {
 			<Provider store={store}>
 				<AuthProvider>
 					<RouterProvider router={router} />
+					<ToastContainer />
 				</AuthProvider>
 			</Provider>
 			<CssBaseline />

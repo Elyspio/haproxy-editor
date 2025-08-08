@@ -10,5 +10,8 @@ export type HaproxyConfigurationFront = {
 export type ConfigState = {
 	current: HaproxyConfigurationFront;
 	previous: HaproxyConfigurationFront;
-	updates: PartialRecord<keyof HaproxyConfigurationFront, PromiseState>;
+	calls: {
+		validate?: PromiseState;
+		save?: PromiseState;
+	};
 };

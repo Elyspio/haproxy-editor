@@ -1,5 +1,7 @@
-﻿using Haproxy.Editor.Abstractions.Data;
+﻿using System.ComponentModel.DataAnnotations;
+using Haproxy.Editor.Abstractions.Data;
 using Haproxy.Editor.Abstractions.Interfaces.Services;
+using ValidationResult = Haproxy.Editor.Abstractions.Data.ValidationResult;
 
 namespace Haproxy.Editor.Endpoints;
 
@@ -11,7 +13,8 @@ public static class HaproxyEndpoints
 
 
 		grp.MapGet("/config", GetConfig).WithName("GetHaproxyConfig");
-		grp.MapPost("/config", SetConfig).WithName("SaveHaproxyConfig");
+		grp.MapPut("/config", SetConfig).WithName("SaveHaproxyConfig");
+		grp.MapPost("/config/validate", ValidateConfig).WithName("ValidateHaproxyConfig");
 
 		return app;
 	}
@@ -24,5 +27,12 @@ public static class HaproxyEndpoints
 	private static Task SetConfig(HaproxyConfiguration config, IHaproxyService haproxyService)
 	{
 		return haproxyService.SaveConfig(config);
+	}
+
+	private static async Task<IResult> ValidateConfig(HaproxyConfiguration config, IHaproxyService haproxyService)
+	{
+		var result = await haproxyService.ValidateConfig(config);
+
+		return result.IsValid ? Results.Ok() : Results.BadRequest(result.ErrorMessage);
 	}
 }
