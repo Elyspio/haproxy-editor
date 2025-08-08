@@ -2,11 +2,11 @@
 
 public class HaproxyConfiguration
 {
-	public List<string> Global { get; init; } = [];
+	public required List<string> Global { get; init; }
 
-	public List<string> Defaults { get; init; } = [];
+	public required List<string> Defaults { get; init; } = [];
 
-	public Dictionary<string, List<string>> Frontends { get; init; } = new();
+	public required Dictionary<string, List<string>> Frontends { get; init; } 
 
-	public Dictionary<string, List<string>> Backends { get; init; } = new();
+	public required Dictionary<string, List<string>> Backends { get; init; } 
 }

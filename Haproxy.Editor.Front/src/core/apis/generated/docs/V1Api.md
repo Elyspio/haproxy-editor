@@ -1,6 +1,6 @@
 # V1Api
 
-All URIs are relative to *https://localhost:5000*
+All URIs are relative to *https://localhost:7252*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|

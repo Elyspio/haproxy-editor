@@ -6,10 +6,10 @@ import { AuthService } from "@services/auth.service";
 export class Api {
 	public readonly v1: V1Api;
 
-	@inject(AuthService)
 	private readonly authService: AuthService = null!;
 
-	constructor() {
-		this.v1 = new V1Api(undefined, window["haproxy-editor"].endpoints.apiUrl, this.authService.axios);
+	constructor(@inject(AuthService) authService: AuthService) {
+		this.authService = authService;
+		this.v1 = new V1Api(undefined, window["haproxy-editor"].config.endpoints.apiUrl, this.authService.axios);
 	}
 }

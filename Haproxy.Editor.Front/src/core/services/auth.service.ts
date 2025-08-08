@@ -6,20 +6,20 @@ import axios, { type AxiosInstance } from "axios";
 export class AuthService {
 	#token?: string;
 
-	public get axios(): AxiosInstance {
-		const instance = axios.create();
+	private instance!: AxiosInstance;
 
-		instance.interceptors.request.use((config) => {
-			config.headers["Authorization"] = `Bearer ${this.user}`;
+	public get axios(): AxiosInstance {
+		if (this.instance) return this.instance;
+
+		this.instance = axios.create();
+
+		this.instance.interceptors.request.use((config) => {
+			config.headers["Authorization"] = `Bearer ${this.#token}`;
 
 			return config;
 		});
 
-		return instance;
-	}
-
-	get user(): string {
-		return this.#token ?? "";
+		return this.instance;
 	}
 
 	set user(user: User) {

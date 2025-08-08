@@ -4,7 +4,7 @@ export type AuthState = {
 	/**
 	 * Infos de l'utilisateur SSO
 	 */
-	user?: User;
+	user: User | null;
 	/**
 	 * Etape en cours de l'authentification
 	 */

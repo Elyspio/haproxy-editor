@@ -4,6 +4,7 @@ import { setAuth } from "@modules/auth/auth.async.actions";
 
 const initialState: AuthState = {
 	step: AuthStep.Disconnected,
+	user: null,
 };
 
 const slice = createSlice({

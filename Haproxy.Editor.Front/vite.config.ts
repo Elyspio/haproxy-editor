@@ -1,6 +1,7 @@
 import { getDefaultConfig } from "@elyspio/vite-eslint-config";
+import mkcert from "vite-plugin-mkcert";
+const config = getDefaultConfig({ basePath: __dirname, port: 4000 });
 
-const config = getDefaultConfig({ basePath: __dirname, port: 3000 });
+config.plugins?.push(mkcert());
 
-// https://vite.dev/config/
 export default config;

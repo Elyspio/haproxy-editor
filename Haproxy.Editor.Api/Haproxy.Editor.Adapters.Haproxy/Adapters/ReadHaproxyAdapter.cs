@@ -18,7 +18,13 @@ public class ReadHaproxyAdapter : TracingAdapter, IReadHaproxyAdapter
 	{
 		using var _ = LogAdapter($"{Log.F(filePath)}");
 
-		var config = new HaproxyConfiguration();
+		var config = new HaproxyConfiguration
+		{
+			Global = [],
+			Defaults = [],
+			Frontends = new Dictionary<string, List<string>>(),
+			Backends = new Dictionary<string, List<string>>()
+		};
 
 		var content = await File.ReadAllTextAsync(filePath);
 

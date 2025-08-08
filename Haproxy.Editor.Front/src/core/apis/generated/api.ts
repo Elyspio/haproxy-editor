@@ -35,25 +35,25 @@ export interface HaproxyConfiguration {
      * @type {Array<string>}
      * @memberof HaproxyConfiguration
      */
-    'global'?: Array<string>;
+    'global': Array<string>;
     /**
      * 
      * @type {Array<string>}
      * @memberof HaproxyConfiguration
      */
-    'defaults'?: Array<string>;
+    'defaults': Array<string>;
     /**
      * 
      * @type {{ [key: string]: Array<string>; }}
      * @memberof HaproxyConfiguration
      */
-    'frontends'?: { [key: string]: Array<string>; };
+    'frontends': { [key: string]: Array<string>; };
     /**
      * 
      * @type {{ [key: string]: Array<string>; }}
      * @memberof HaproxyConfiguration
      */
-    'backends'?: { [key: string]: Array<string>; };
+    'backends': { [key: string]: Array<string>; };
 }
 
 /**

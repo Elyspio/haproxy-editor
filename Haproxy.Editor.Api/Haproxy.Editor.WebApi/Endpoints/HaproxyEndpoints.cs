@@ -7,7 +7,7 @@ public static class HaproxyEndpoints
 {
 	public static WebApplication MapHaproxyEndpoints(this WebApplication app)
 	{
-		var grp = app.MapGroup("/haproxy").WithTags("Haproxy").WithOpenApi();
+		var grp = app.MapGroup("/haproxy").WithTags("Haproxy").RequireAuthorization();
 
 
 		grp.MapGet("/config", GetConfig).WithName("GetHaproxyConfig");

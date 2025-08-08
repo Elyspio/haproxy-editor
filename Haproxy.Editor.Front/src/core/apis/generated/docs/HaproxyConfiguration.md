@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**global** | **Array&lt;string&gt;** |  | [optional] [default to undefined]
-**defaults** | **Array&lt;string&gt;** |  | [optional] [default to undefined]
-**frontends** | **{ [key: string]: Array&lt;string&gt;; }** |  | [optional] [default to undefined]
-**backends** | **{ [key: string]: Array&lt;string&gt;; }** |  | [optional] [default to undefined]
+**global** | **Array&lt;string&gt;** |  | [default to undefined]
+**defaults** | **Array&lt;string&gt;** |  | [default to undefined]
+**frontends** | **{ [key: string]: Array&lt;string&gt;; }** |  | [default to undefined]
+**backends** | **{ [key: string]: Array&lt;string&gt;; }** |  | [default to undefined]
 
 ## Example
 
