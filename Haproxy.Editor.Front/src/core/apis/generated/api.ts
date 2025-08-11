@@ -32,6 +32,12 @@ import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerM
 export interface HaproxyConfiguration {
     /**
      * 
+     * @type {string}
+     * @memberof HaproxyConfiguration
+     */
+    'raw': string;
+    /**
+     * 
      * @type {Array<string>}
      * @memberof HaproxyConfiguration
      */

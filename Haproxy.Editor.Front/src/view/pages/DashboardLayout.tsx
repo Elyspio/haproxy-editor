@@ -8,7 +8,7 @@ import { SidebarDashboard } from "@components/dashboard/Sidebar.Dashboard";
 import HaproxyIcon from "@/view/icons/HaproxyIcon";
 import { DashboardHeader } from "@components/dashboard/Header.Dashboard";
 
-export default function DashboardLayout() {
+export function DashboardLayout() {
 	const theme = useTheme();
 
 	const [isDesktopNavigationExpanded, setIsDesktopNavigationExpanded] = React.useState(true);

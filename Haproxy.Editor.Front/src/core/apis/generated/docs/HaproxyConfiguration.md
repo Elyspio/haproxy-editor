@@ -5,6 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**raw** | **string** |  | [default to undefined]
 **global** | **Array&lt;string&gt;** |  | [default to undefined]
 **defaults** | **Array&lt;string&gt;** |  | [default to undefined]
 **frontends** | **{ [key: string]: Array&lt;string&gt;; }** |  | [default to undefined]
@@ -16,6 +17,7 @@ Name | Type | Description | Notes
 import { HaproxyConfiguration } from './api';
 
 const instance: HaproxyConfiguration = {
+    raw,
     global,
     defaults,
     frontends,

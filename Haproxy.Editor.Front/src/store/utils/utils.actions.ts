@@ -1,12 +1,4 @@
-import {
-	ActionCreatorWithPayload,
-	AsyncThunkPayloadCreator,
-	createAction as _createAction,
-	createAsyncThunk as _createAsyncThunk,
-	isRejected,
-	type TaskRejected,
-	type UnknownAction,
-} from "@reduxjs/toolkit";
+import { AsyncThunkPayloadCreator, createAction as _createAction, createAsyncThunk as _createAsyncThunk, isRejected, type UnknownAction } from "@reduxjs/toolkit";
 import type { IdWindow } from "./utils.types";
 import type { StoreState } from "@store/store.reducers";
 import { Container } from "inversify";

@@ -3,6 +3,7 @@ import { userManager } from "@apis/oidc.client";
 import type { User } from "oidc-client-ts";
 import { useAppDispatch, useAppSelector } from "@store/utils/utils.selectors";
 import { setAuth } from "@modules/auth/auth.async.actions";
+import { navigateToRoute } from "@/config/view.config";
 
 type AuthContextType = {
 	user: User | null;
@@ -19,7 +20,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 	const setUser = useCallback(
 		(user: User | null) => {
+			console.log("set user", user);
 			dispatch(setAuth(user));
+			navigateToRoute.root();
 		},
 		[dispatch]
 	);

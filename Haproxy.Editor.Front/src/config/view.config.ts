@@ -7,7 +7,7 @@ export type Route = {
 export const routes = {
 	dashboard: {
 		summary: {
-			path: "",
+			path: "/",
 		},
 	},
 	frontend: {
@@ -29,6 +29,11 @@ export const routes = {
 	global: {
 		edit: {
 			path: "global/edit",
+		},
+	},
+	raw: {
+		view: {
+			path: "raw/edit",
 		},
 	},
 	default: {

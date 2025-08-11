@@ -2,7 +2,6 @@ import { createAsyncActionGenerator, getService } from "@store/utils/utils.actio
 import { User } from "oidc-client-ts";
 import { AuthService } from "@services/auth.service";
 import { startApp } from "@modules/config/config.async.actions";
-import { userManager } from "@apis/oidc.client";
 
 const createAsyncThunk = createAsyncActionGenerator("auth");
 

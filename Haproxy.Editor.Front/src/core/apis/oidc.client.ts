@@ -9,6 +9,9 @@ const oidcConfig: UserManagerSettings = {
 	response_type: "code",
 	scope: "openid profile email",
 	userStore: new WebStorageStateStore({ store: window.localStorage }),
+	extraQueryParams: {
+		kc_idp_hint: "google"
+	}
 };
 
 Log.setLogger(console);

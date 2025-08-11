@@ -19,4 +19,10 @@
 		<ProjectReference Include="..\Haproxy.Editor.Core\Haproxy.Editor.Core.csproj"/>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Update="haproxy.cfg">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
 </Project>

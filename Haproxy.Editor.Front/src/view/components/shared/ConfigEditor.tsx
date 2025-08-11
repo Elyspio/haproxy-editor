@@ -1,6 +1,5 @@
 import React from "react";
 import Editor, { type Monaco } from "@monaco-editor/react";
-import * as monaco from "monaco-editor";
 import { editor } from "monaco-editor";
 
 function handleEditorWillMount(monaco: Monaco) {

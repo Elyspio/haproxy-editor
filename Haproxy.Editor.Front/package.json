@@ -8,16 +8,21 @@
 		"build": "tsc -b && vite build",
 		"lint": "eslint .",
 		"preview": "yarn build && vite preview",
+		"test": "vitest",
+		"test:debug": "vitest --test-timeout=0 --no-file-parallelism",
 		"refresh:api": "tsx scripts/refresh-api.ts"
 	},
 	"dependencies": {
+		"@dagrejs/dagre": "^1.1.5",
 		"@emotion/react": "^11.14.0",
 		"@emotion/styled": "^11.14.1",
 		"@monaco-editor/react": "^4.7.0",
 		"@mui/icons-material": "^7.3.1",
 		"@mui/material": "^7.3.1",
 		"@reduxjs/toolkit": "^2.8.2",
+		"@xyflow/react": "^12.8.2",
 		"axios": "^1.11.0",
+		"elkjs": "^0.10.2",
 		"inversify": "^7.7.0",
 		"monaco-editor": "^0.52.2",
 		"oidc-client-ts": "^3.3.0",
@@ -33,7 +38,8 @@
 		"@types/node": "^24.2.0",
 		"@types/react": "^19.1.9",
 		"@types/react-dom": "^19.1.7",
-		"tsx": "^4.20.3"
+		"tsx": "^4.20.3",
+		"vitest": "^3.2.4"
 	},
 	"resolutions": {
 		"vite": "npm:rolldown-vite@7.0.6"

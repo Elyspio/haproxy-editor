@@ -1,6 +1,5 @@
-import React from "react";
 import Typography from "@mui/material/Typography";
-import { Chip, InputLabel, Stack } from "@mui/material";
+import { Chip, Stack } from "@mui/material";
 import Box from "@mui/material/Box";
 
 type PageHeaderProps = {

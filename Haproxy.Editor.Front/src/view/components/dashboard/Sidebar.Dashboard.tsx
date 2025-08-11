@@ -5,9 +5,7 @@ import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
 import Toolbar from "@mui/material/Toolbar";
-import PersonIcon from "@mui/icons-material/Person";
 import BarChartIcon from "@mui/icons-material/BarChart";
-import DescriptionIcon from "@mui/icons-material/Description";
 import LayersIcon from "@mui/icons-material/Layers";
 import { matchPath, useLocation } from "react-router";
 import { DRAWER_WIDTH, MINI_DRAWER_WIDTH } from "@/config/view.constants";
@@ -17,8 +15,9 @@ import { DividerItemSidebarDashboard } from "@components/dashboard/DividerItem.S
 import { getDrawerSxTransitionMixin, getDrawerWidthTransitionMixin } from "@/view/styles/dashboard.mixins";
 import DashboardSidebarContext from "@/view/context/Sidebar.Dashboard.context";
 import { routes } from "@/config/view.config";
-import { Create, Edit, Public } from "@mui/icons-material";
+import { Edit, Public } from "@mui/icons-material";
 import ConveyorBeltIcon from "@mui/icons-material/ConveyorBelt";
+
 export interface DashboardSidebarProps {
 	expanded?: boolean;
 	setExpanded: (expanded: boolean) => void;
@@ -121,6 +120,7 @@ export function SidebarDashboard({ expanded = true, setExpanded, disableCollapsi
 						<HeaderItemSidebarDashboard>Dashboard</HeaderItemSidebarDashboard>
 
 						<PageItemSidebarDashboard id="Summary" title="  Summary" icon={<BarChartIcon />} href="/" selected={pathname === "/"} />
+						<PageItemSidebarDashboard id="raw" title="Raw" icon={<LayersIcon />} href={routes.raw.view.path} selected={!!matchPath(routes.raw.view.path, pathname)} />
 
 						<DividerItemSidebarDashboard />
 
@@ -129,11 +129,10 @@ export function SidebarDashboard({ expanded = true, setExpanded, disableCollapsi
 						<PageItemSidebarDashboard
 							id="global"
 							title="Global"
-							icon={<Edit />}
+							icon={<LayersIcon />}
 							href={routes.global.edit.path}
 							selected={!!matchPath(routes.global.edit.path, pathname)}
 						/>
-
 						<PageItemSidebarDashboard
 							id="default"
 							title="Default"
@@ -141,7 +140,6 @@ export function SidebarDashboard({ expanded = true, setExpanded, disableCollapsi
 							href={routes.default.edit.path}
 							selected={!!matchPath(routes.default.edit.path, pathname)}
 						/>
-
 						<PageItemSidebarDashboard
 							id="frontend"
 							title="Frontend"
