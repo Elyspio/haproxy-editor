@@ -1,5 +1,5 @@
-import type {PromiseState} from "@store/utils/utils.types";
-import type {HaproxyConfiguration} from "@apis/generated";
+import type { PromiseState } from "@store/utils/utils.types";
+import type { HaproxyConfiguration } from "@apis/generated";
 
 export type HaproxyConfigurationFront = {
 	raw: string;
@@ -9,63 +9,58 @@ export type HaproxyConfigurationFront = {
 	backends: Record<string, string>;
 };
 
-
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Parsed {
-
 	export type Config = {
-		frontends: Record<string, Parsed.Frontend>
-		backends: Record<string, Parsed.Backend>
-	}
-
+		frontends: Record<string, Parsed.Frontend>;
+		backends: Record<string, Parsed.Backend>;
+	};
 
 	export type Frontend = {
 		// Name of the frontend
 		name: string;
 
 		// Mappings of backends to use
-		mappings: FrontendMapping[]
+		mappings: FrontendMapping[];
 
 		// ACL present in this mapping
-		acls: Record<FrontendAcl["name"], FrontendAcl>
-	}
+		acls: Record<FrontendAcl["name"], FrontendAcl>;
+	};
 
 	export type FrontendAcl = {
 		// Name of the ACL
 		name: string;
 
-		activator: HostAclActivator
-
-	}
+		activator: HostAclActivator;
+	};
 
 	export type HostAclActivator = {
-		host: string
-	}
+		host: string;
+	};
 
 	export type FrontendMapping = {
 		// Name of the ACL to use
-		acl?: string
+		acl?: string;
 		// Name of the backend to use
-		backend: string
-	}
-
+		backend: string;
+	};
 
 	export type Backend = {
 		name: string;
-		servers: BackendServer[]
-	}
+		servers: BackendServer[];
+	};
 
 	export type BackendServer = {
-		name: string
-		host: string,
-		port: number,
-		checked: boolean
-	}
+		name: string;
+		host: string;
+		port: number;
+		checked: boolean;
+	};
 }
 
-
 export type ConfigState = {
-	raw: HaproxyConfiguration
-	parsed: Parsed.Config,
+	raw: HaproxyConfiguration;
+	parsed: Parsed.Config;
 	current: HaproxyConfigurationFront;
 	previous: HaproxyConfigurationFront;
 	calls: {

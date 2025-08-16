@@ -62,22 +62,3 @@ export async function wrapErrorWithToast<T>(fn: Promise<T>, errorMessage: ReactN
 		throw e;
 	}
 }
-
-/**
- * En cas de succès, affiche un message de succès dans le toast (width = fit-content par défaut)
- * En cas d'erreur, affiche un message d'erreur dans le toast (width = fit-content par défaut)
- * @param fn Fonction qui peut lancer une erreur
- * @param successMessage Message de succès à afficher
- * @param errorMessage Message d'erreur à afficher
- * @param options Options du toast
- */
-export async function wrapSuccessOrErrorWithToast<T>(fn: Promise<T>, successMessage: ReactNode, errorMessage: ReactNode, options: ToastOptions = {}): Promise<T> {
-	try {
-		const res = (await fn) as T;
-		toast.success(successMessage, options);
-		return res;
-	} catch (e) {
-		toast.error(errorMessage, options);
-		throw e;
-	}
-}

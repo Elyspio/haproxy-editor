@@ -1,4 +1,3 @@
-import React from "react";
 import Editor, { type Monaco } from "@monaco-editor/react";
 import { editor } from "monaco-editor";
 

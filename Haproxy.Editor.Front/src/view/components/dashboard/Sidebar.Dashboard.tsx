@@ -15,7 +15,7 @@ import { DividerItemSidebarDashboard } from "@components/dashboard/DividerItem.S
 import { getDrawerSxTransitionMixin, getDrawerWidthTransitionMixin } from "@/view/styles/dashboard.mixins";
 import DashboardSidebarContext from "@/view/context/Sidebar.Dashboard.context";
 import { routes } from "@/config/view.config";
-import { Edit, Public } from "@mui/icons-material";
+import { Public } from "@mui/icons-material";
 import ConveyorBeltIcon from "@mui/icons-material/ConveyorBelt";
 
 export interface DashboardSidebarProps {

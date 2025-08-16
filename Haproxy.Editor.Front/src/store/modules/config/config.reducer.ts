@@ -1,7 +1,7 @@
-import {createSlice} from "@reduxjs/toolkit";
-import type {ConfigState, HaproxyConfigurationFront} from "@modules/config/config.types";
-import {_updateConfig, startApp, syncConfig, syncParsedConfig} from "@modules/config/config.async.actions";
-import {setPromiseStatus} from "@store/utils/utils.reducer";
+import { createSlice } from "@reduxjs/toolkit";
+import type { ConfigState, HaproxyConfigurationFront } from "@modules/config/config.types";
+import { _updateConfig, startApp, syncConfig, syncParsedConfig } from "@modules/config/config.async.actions";
+import { setPromiseStatus } from "@store/utils/utils.reducer";
 
 const defaultConfig: HaproxyConfigurationFront = {
 	defaults: "",
@@ -12,7 +12,7 @@ const defaultConfig: HaproxyConfigurationFront = {
 };
 
 const initialState: ConfigState = {
-	raw: {raw: "", backends: {}, frontends: {}, global: [], defaults: []},
+	raw: { raw: "", backends: {}, frontends: {}, global: [], defaults: [] },
 	current: defaultConfig,
 	previous: defaultConfig,
 	parsed: {
@@ -29,7 +29,7 @@ const slice = createSlice({
 	extraReducers: (builder) => {
 		builder.addCase(startApp.fulfilled, (state, action) => {
 			state.current = action.payload.front;
-			state.raw = action.payload.raw
+			state.raw = action.payload.raw;
 			state.previous = structuredClone(state.current);
 		});
 

@@ -1,7 +1,7 @@
-import {inject, injectable} from "inversify";
-import {Api} from "@apis/api";
-import type {HaproxyConfigurationFront} from "@modules/config/config.types";
-import type {HaproxyConfiguration} from "@apis/generated";
+import { inject, injectable } from "inversify";
+import { Api } from "@apis/api";
+import type { HaproxyConfigurationFront } from "@modules/config/config.types";
+import type { HaproxyConfiguration } from "@apis/generated";
 
 type ValidateConfigResult = { success: boolean; error?: string };
 
@@ -15,13 +15,16 @@ export class ConfigService {
 
 		const data = result.data;
 
-		return [data, {
-			raw: data.raw,
-			global: data.global.join("\n"),
-			defaults: data.defaults.join("\n"),
-			frontends: Object.fromEntries(Object.entries<string[]>(data.frontends).map(([key, value]) => [key, value.join("\n")])),
-			backends: Object.fromEntries(Object.entries<string[]>(data.backends).map(([key, value]) => [key, value.join("\n")])),
-		}];
+		return [
+			data,
+			{
+				raw: data.raw,
+				global: data.global.join("\n"),
+				defaults: data.defaults.join("\n"),
+				frontends: Object.fromEntries(Object.entries<string[]>(data.frontends).map(([key, value]) => [key, value.join("\n")])),
+				backends: Object.fromEntries(Object.entries<string[]>(data.backends).map(([key, value]) => [key, value.join("\n")])),
+			},
+		];
 	}
 
 	async updateConfig(config: HaproxyConfigurationFront) {
@@ -39,7 +42,7 @@ export class ConfigService {
 			error = e.response?.data ?? "Unknown error";
 		}
 
-		return {success, error};
+		return { success, error };
 	}
 
 	private convertToApi(config: HaproxyConfigurationFront): HaproxyConfiguration {

@@ -10,8 +10,8 @@ const oidcConfig: UserManagerSettings = {
 	scope: "openid profile email",
 	userStore: new WebStorageStateStore({ store: window.localStorage }),
 	extraQueryParams: {
-		kc_idp_hint: "google"
-	}
+		kc_idp_hint: "google",
+	},
 };
 
 Log.setLogger(console);

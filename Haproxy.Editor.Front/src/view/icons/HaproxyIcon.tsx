@@ -1,4 +1,3 @@
-import * as React from "react";
 import SvgIcon from "@mui/material/SvgIcon";
 
 const primaryColor = "#2581eb";

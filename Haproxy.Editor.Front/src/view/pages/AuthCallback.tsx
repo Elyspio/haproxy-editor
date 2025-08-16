@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { userManager } from "@apis/oidc.client";
 import { navigateToRoute } from "@/config/view.config";
