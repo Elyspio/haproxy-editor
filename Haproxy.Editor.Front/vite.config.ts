@@ -1,11 +1,9 @@
 import { getDefaultConfig } from "@elyspio/vite-eslint-config";
-import mkcert from "vite-plugin-mkcert";
 
-const config = getDefaultConfig({ basePath: __dirname, port: 4000 });
-
-config.plugins?.push(mkcert());
+const config = getDefaultConfig({ basePath: __dirname, port: 3000 });
 
 config.server ??= {};
+
 config.server.proxy = {
 	"/api": {
 		target: "https://localhost:7252",
@@ -15,4 +13,9 @@ config.server.proxy = {
 	},
 };
 
-export default config;
+export default {
+	...config,
+	test: {
+		environment: "jsdom",
+	},
+};

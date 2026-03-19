@@ -13,6 +13,7 @@ public class ReadHaproxyAdapter : TracingAdapter, IReadHaproxyAdapter
 	{
 	}
 
+	/// <exception cref="ArgumentOutOfRangeException"></exception>
 	/// <inheritdoc />
 	public async Task<HaproxyConfiguration> Read(string filePath)
 	{
@@ -21,10 +22,15 @@ public class ReadHaproxyAdapter : TracingAdapter, IReadHaproxyAdapter
 
 		var content = await File.ReadAllTextAsync(filePath);
 
-		var config = new HaproxyConfiguration(content);
-		
-		var lines = content.Split(Environment.NewLine);
+		return Parse(content);
+	}
 
+	/// <inheritdoc />
+	public HaproxyConfiguration Parse(string content)
+	{
+		var config = new HaproxyConfiguration(content);
+
+		var lines = content.Split(Environment.NewLine);
 
 		// Le bloc courant (global, defaults, frontend, backend)
 		HaproxyConfigBlock? current = null;

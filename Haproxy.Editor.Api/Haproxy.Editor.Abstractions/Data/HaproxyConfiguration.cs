@@ -8,6 +8,10 @@ public record HaproxyConfiguration(
 	Dictionary<string, List<string>> Backends
 )
 {
+	public HaproxyConfiguration() : this("")
+	{
+	}
+	
 	public HaproxyConfiguration(string raw) : this(raw, [], [], [], [])
 	{
 	}

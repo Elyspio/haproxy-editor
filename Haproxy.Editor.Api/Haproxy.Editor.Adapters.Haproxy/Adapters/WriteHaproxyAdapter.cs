@@ -15,9 +15,17 @@ public class WriteHaproxyAdapter : TracingAdapter, IWriteHaproxyAdapter
 	}
 
 	/// <inheritdoc />
-	public async Task Write(string filePath, HaproxyConfiguration conf)
+	public async Task WriteToFile(string filePath, HaproxyConfiguration conf)
 	{
 		using var _ = LogAdapter($"{Log.F(filePath)}");
+
+		await File.WriteAllTextAsync(filePath, WriteToString(conf));
+	}
+
+	/// <inheritdoc />
+	public string WriteToString(HaproxyConfiguration conf)
+	{
+		using var _ = LogAdapter();
 
 		var sb = new StringBuilder();
 
@@ -49,6 +57,7 @@ public class WriteHaproxyAdapter : TracingAdapter, IWriteHaproxyAdapter
 			sb.AppendLine("");
 		}
 
-		await File.WriteAllTextAsync(filePath, sb.ToString());
+
+		return sb.ToString();
 	}
 }

@@ -1,0 +1,101 @@
+namespace Haproxy.Editor.Abstractions.Data;
+
+public sealed record HaproxyResourceSnapshot
+{
+	public long Version { get; init; }
+
+	public HaproxyGlobalResource Global { get; init; } = new();
+
+	public List<HaproxyDefaultsResource> Defaults { get; init; } = [];
+
+	public List<HaproxyFrontendResource> Frontends { get; init; } = [];
+
+	public List<HaproxyBackendResource> Backends { get; init; } = [];
+
+	public HaproxySummary Summary { get; init; } = new();
+}
+
+public sealed record HaproxyGlobalResource
+{
+	public bool Daemon { get; init; }
+}
+
+public sealed record HaproxyDefaultsResource
+{
+	public string Name { get; init; } = string.Empty;
+
+	public string? Mode { get; init; }
+}
+
+public sealed record HaproxyFrontendResource
+{
+	public string Name { get; init; } = string.Empty;
+
+	public string? Mode { get; init; }
+
+	public string? DefaultBackend { get; init; }
+
+	public List<HaproxyBindResource> Binds { get; init; } = [];
+
+	public List<HaproxyAclResource> Acls { get; init; } = [];
+
+	public List<HaproxyBackendSwitchingRuleResource> BackendSwitchingRules { get; init; } = [];
+}
+
+public sealed record HaproxyBackendResource
+{
+	public string Name { get; init; } = string.Empty;
+
+	public string? Mode { get; init; }
+
+	public string? Balance { get; init; }
+
+	public List<HaproxyServerResource> Servers { get; init; } = [];
+}
+
+public sealed record HaproxyBindResource
+{
+	public string Name { get; init; } = string.Empty;
+
+	public string? Address { get; init; }
+
+	public int? Port { get; init; }
+}
+
+public sealed record HaproxyAclResource
+{
+	public string Name { get; init; } = string.Empty;
+
+	public string? Criterion { get; init; }
+
+	public string? Value { get; init; }
+}
+
+public sealed record HaproxyBackendSwitchingRuleResource
+{
+	public string BackendName { get; init; } = string.Empty;
+
+	public string? Cond { get; init; }
+
+	public string? CondTest { get; init; }
+}
+
+public sealed record HaproxyServerResource
+{
+	public string Name { get; init; } = string.Empty;
+
+	public string? Address { get; init; }
+
+	public int? Port { get; init; }
+
+	public string? Check { get; init; }
+}
+
+public sealed record HaproxySummary
+{
+	public int FrontendCount { get; init; }
+
+	public int BackendCount { get; init; }
+
+	public int ServerCount { get; init; }
+}

@@ -7,7 +7,7 @@ type InvalidConfigurationProps = {
 export function InvalidConfiguration({ errorMsg }: Readonly<InvalidConfigurationProps>) {
 	return (
 		<Stack spacing={1} width={"100%"} height={"100%"} justifyContent={"center"} alignItems={"center"}>
-			<Typography fontWeight={"bold"}>Configuration invalide</Typography>
+			<Typography fontWeight={"bold"}>Invalid config</Typography>
 			<Typography>{errorMsg}</Typography>
 		</Stack>
 	);

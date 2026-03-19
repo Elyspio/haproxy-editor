@@ -1,8 +1,16 @@
 ﻿<Solution>
-	<Folder Name="/Adapters/">
-		<Project Path="Haproxy.Editor.Api\Haproxy.Editor.Adapters.Haproxy\Haproxy.Editor.Adapters.Haproxy.csproj" Type="Classic C#"/>
-	</Folder>
-	<Project Path="Haproxy.Editor.Api\Haproxy.Editor.Abstractions\Haproxy.Editor.Abstractions.csproj" Type="Classic C#"/>
-	<Project Path="Haproxy.Editor.Api\Haproxy.Editor.Core\Haproxy.Editor.Core.csproj" Type="Classic C#"/>
-	<Project Path="Haproxy.Editor.Api\Haproxy.Editor.WebApi\Haproxy.Editor.WebApi.csproj" Type="Classic C#"/>
+  <Folder Name="/Api/">
+    <Project Path="Haproxy.Editor.Api\Haproxy.Editor.Abstractions\Haproxy.Editor.Abstractions.csproj" />
+    <Project Path="Haproxy.Editor.Api\Haproxy.Editor.Core\Haproxy.Editor.Core.csproj" />
+    <Project Path="Haproxy.Editor.Api\Haproxy.Editor.WebApi\Haproxy.Editor.WebApi.csproj" />
+  </Folder>
+  <Folder Name="/Api/Adapters/">
+    <Project Path="Haproxy.Editor.Api\Haproxy.Editor.Adapters.Docker\Haproxy.Editor.Adapters.Docker.csproj" />
+    <Project Path="Haproxy.Editor.Api\Haproxy.Editor.Adapters.Haproxy\Haproxy.Editor.Adapters.Haproxy.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Haproxy.Editor.Api\Haproxy.Editor.Core.Tests\Haproxy.Editor.Core.Tests.csproj" />
+    <Project Path="Haproxy.Editor.Api\Haproxy.Editor.WebApi.Tests\Haproxy.Editor.WebApi.Tests.csproj" />
+  </Folder>
+  <Project Path="Haproxy.Editor.AppHost/Haproxy.Editor.AppHost.csproj" />
 </Solution>

@@ -2,7 +2,6 @@ import { configureStore } from "@reduxjs/toolkit";
 import { reducers } from "@store/store.reducers";
 import { logErrorMiddleware } from "@store/utils/middlewares/log-error.middleware";
 import { container } from "@/core/di/di";
-import { updateParsedConfigMiddleware } from "@modules/config/config.middlewares";
 
 export function createStore() {
 	const store = configureStore({
@@ -21,7 +20,6 @@ export function createStore() {
 			});
 
 			middlewares.push(logErrorMiddleware);
-			middlewares.push(updateParsedConfigMiddleware);
 
 			return middlewares;
 		},

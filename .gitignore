@@ -12,3 +12,5 @@ bin
 obj
 */apis/generated/docs/
 *.user
+Haproxy.Editor.Front/src/core/apis/generated/docs
+.vs

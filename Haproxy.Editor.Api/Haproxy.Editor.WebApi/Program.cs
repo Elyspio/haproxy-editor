@@ -1,9 +1,13 @@
+using Coexya.Utils.Telemetry.Tracing.Builder;
+using Elyspio.Utils.Telemetry.Technical.Options;
 using Haproxy.Editor.Abstractions.Configurations;
 using Haproxy.Editor.Abstractions.Extensions;
 using Haproxy.Editor.Adapters.Haproxy;
 using Haproxy.Editor.Core;
 using Haproxy.Editor.Endpoints;
 using Microsoft.IdentityModel.Logging;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +15,12 @@ IdentityModelEventSource.ShowPII = true;
 
 builder.Logging.AddSimpleConsole(x => x.SingleLine = true).SetMinimumLevel(LogLevel.Debug);
 
-builder.Services.AddLogging();
+builder.Services.AddLogging(x =>
+{
+	x.AddOpenTelemetry();
+});
+
+
 
 
 builder.AddModule<CoreModule>();
@@ -25,41 +34,34 @@ builder.Services.AddSwaggerGen(options =>
 {
 	options.NonNullableReferenceTypesAsRequired();
 	options.SupportNonNullableReferenceTypes();
-	
-	
-	options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+
+
+	options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
 	{
 		Name = "Authorization",
-		Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+		Type = SecuritySchemeType.Http,
 		Scheme = "Bearer",
 		BearerFormat = "JWT",
-		In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+		In = ParameterLocation.Header,
 		Description = "Enter your token."
 	});
-	options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+	options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
 	{
 		{
-			new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-			{
-				Reference = new Microsoft.OpenApi.Models.OpenApiReference
-				{
-					Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-					Id = "Bearer"
-				}
-			},
+			new OpenApiSecuritySchemeReference("Bearer", hostDocument: document, externalResource: null),
 			new List<string>()
 		}
 	});
 });
 
-var oidcConfig = builder.Configuration.GetRequiredSection("Oidc").Get<OidcConfig>()!; 
+var oidcConfig = builder.Configuration.GetRequiredSection("Oidc").Get<OidcConfig>()!;
 
 builder.Services.AddAuthentication("Bearer")
 	.AddJwtBearer("Bearer", options =>
 	{
 		options.Authority = oidcConfig.Issuer;
 		options.Audience = oidcConfig.Audience;
-		options.TokenValidationParameters = new()
+		options.TokenValidationParameters = new TokenValidationParameters
 		{
 			ValidateAudience = true,
 			ValidAudience = oidcConfig.Audience,
@@ -67,7 +69,7 @@ builder.Services.AddAuthentication("Bearer")
 			ValidIssuer = oidcConfig.Issuer,
 			ValidateLifetime = true,
 			ClockSkew = TimeSpan.FromMinutes(0.5),
-			ValidateIssuerSigningKey = true,
+			ValidateIssuerSigningKey = true
 		};
 	});
 
@@ -81,6 +83,22 @@ builder.Services.AddCors(options =>
 			.AllowAnyMethod();
 	});
 });
+
+
+var otelOptions = builder.Configuration.GetSection("OpenTelemetry").Get<AppOpenTelemetryBuilderOptions>();
+
+if (otelOptions == null)
+{
+	throw new InvalidOperationException("OpenTelemetry options not found");
+}
+
+var otelBuilder = new AppOpenTelemetryBuilder<Program>(otelOptions!, builder.Configuration);
+
+otelBuilder.AddAssembly<CoreModule>();
+otelBuilder.AddAssembly<HaproxyAdapterModule>();
+
+otelBuilder.Build(builder.Services);
+
 
 var app = builder.Build();
 
@@ -102,3 +120,5 @@ app.MapHaproxyEndpoints();
 
 
 app.Run();
+
+public partial class Program;

@@ -4,5 +4,7 @@ namespace Haproxy.Editor.Abstractions.Interfaces.Adapters;
 
 public interface IWriteHaproxyAdapter
 {
-	public Task Write(string filePath, HaproxyConfiguration conf);
+	public Task WriteToFile(string filePath, HaproxyConfiguration conf);
+
+	public string WriteToString(HaproxyConfiguration conf);
 }

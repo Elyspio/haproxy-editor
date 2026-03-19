@@ -17,7 +17,7 @@ export function ConfigToolbar() {
 	}, [dispatch]);
 
 	return (
-		<Stack spacing={1} direction={"row"}>
+		<Stack spacing={1} direction={"row"} alignItems={"center"} height={"100%"}>
 			<IconButton onClick={verify}>
 				<Verified />
 			</IconButton>

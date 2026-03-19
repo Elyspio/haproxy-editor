@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,25 +14,25 @@
  */
 
 import type { Configuration } from "./configuration";
-import type { AxiosInstance, AxiosPromise, RawAxiosRequestConfig } from "axios";
+import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from "axios";
 import globalAxios from "axios";
 // Some imports not used depending on template conditions
 // @ts-ignore
 import {
-	assertParamExists,
-	createRequestFunction,
 	DUMMY_BASE_URL,
-	serializeDataIfNeeded,
+	assertParamExists,
 	setApiKeyToObject,
 	setBasicAuthToObject,
 	setBearerAuthToObject,
 	setOAuthToObject,
 	setSearchParams,
+	serializeDataIfNeeded,
 	toPathString,
+	createRequestFunction,
 } from "./common";
 import type { RequestArgs } from "./base";
 // @ts-ignore
-import { BASE_PATH, BaseAPI, COLLECTION_FORMATS, operationServerMap, RequiredError } from "./base";
+import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerMap } from "./base";
 
 /**
  *
@@ -182,6 +183,44 @@ export const V1ApiAxiosParamCreator = function (configuration?: Configuration) {
 				options: localVarRequestOptions,
 			};
 		},
+		/**
+		 *
+		 * @param {string} config
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		validateHaproxyRawConfig: async (config: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+			// verify required parameter 'config' is not null or undefined
+			assertParamExists("validateHaproxyRawConfig", "config", config);
+			const localVarPath = `/haproxy/config/validate/raw`;
+			// use dummy base URL string because the URL constructor only accepts absolute URLs.
+			const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+			let baseOptions;
+			if (configuration) {
+				baseOptions = configuration.baseOptions;
+			}
+
+			const localVarRequestOptions = { method: "POST", ...baseOptions, ...options };
+			const localVarHeaderParameter = {} as any;
+			const localVarQueryParameter = {} as any;
+
+			// authentication Bearer required
+			// http bearer authentication required
+			await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+			if (config !== undefined) {
+				localVarQueryParameter["config"] = config;
+			}
+
+			setSearchParams(localVarUrlObj, localVarQueryParameter);
+			let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+			localVarRequestOptions.headers = { ...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers };
+
+			return {
+				url: toPathString(localVarUrlObj),
+				options: localVarRequestOptions,
+			};
+		},
 	};
 };
 
@@ -233,6 +272,18 @@ export const V1ApiFp = function (configuration?: Configuration) {
 			const localVarOperationServerBasePath = operationServerMap["V1Api.validateHaproxyConfig"]?.[localVarOperationServerIndex]?.url;
 			return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
 		},
+		/**
+		 *
+		 * @param {string} config
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		async validateHaproxyRawConfig(config: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<HaproxyConfiguration>> {
+			const localVarAxiosArgs = await localVarAxiosParamCreator.validateHaproxyRawConfig(config, options);
+			const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+			const localVarOperationServerBasePath = operationServerMap["V1Api.validateHaproxyRawConfig"]?.[localVarOperationServerIndex]?.url;
+			return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+		},
 	};
 };
 
@@ -269,6 +320,15 @@ export const V1ApiFactory = function (configuration?: Configuration, basePath?: 
 		validateHaproxyConfig(haproxyConfiguration: HaproxyConfiguration, options?: RawAxiosRequestConfig): AxiosPromise<void> {
 			return localVarFp.validateHaproxyConfig(haproxyConfiguration, options).then((request) => request(axios, basePath));
 		},
+		/**
+		 *
+		 * @param {string} config
+		 * @param {*} [options] Override http request option.
+		 * @throws {RequiredError}
+		 */
+		validateHaproxyRawConfig(config: string, options?: RawAxiosRequestConfig): AxiosPromise<HaproxyConfiguration> {
+			return localVarFp.validateHaproxyRawConfig(config, options).then((request) => request(axios, basePath));
+		},
 	};
 };
 
@@ -303,6 +363,15 @@ export interface V1ApiInterface {
 	 * @memberof V1ApiInterface
 	 */
 	validateHaproxyConfig(haproxyConfiguration: HaproxyConfiguration, options?: RawAxiosRequestConfig): AxiosPromise<void>;
+
+	/**
+	 *
+	 * @param {string} config
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1ApiInterface
+	 */
+	validateHaproxyRawConfig(config: string, options?: RawAxiosRequestConfig): AxiosPromise<HaproxyConfiguration>;
 }
 
 /**
@@ -347,6 +416,19 @@ export class V1Api extends BaseAPI implements V1ApiInterface {
 	public validateHaproxyConfig(haproxyConfiguration: HaproxyConfiguration, options?: RawAxiosRequestConfig) {
 		return V1ApiFp(this.configuration)
 			.validateHaproxyConfig(haproxyConfiguration, options)
+			.then((request) => request(this.axios, this.basePath));
+	}
+
+	/**
+	 *
+	 * @param {string} config
+	 * @param {*} [options] Override http request option.
+	 * @throws {RequiredError}
+	 * @memberof V1Api
+	 */
+	public validateHaproxyRawConfig(config: string, options?: RawAxiosRequestConfig) {
+		return V1ApiFp(this.configuration)
+			.validateHaproxyRawConfig(config, options)
 			.then((request) => request(this.axios, this.basePath));
 	}
 }

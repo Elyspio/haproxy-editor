@@ -1,68 +1,73 @@
 import type { PromiseState } from "@store/utils/utils.types";
-import type { HaproxyConfiguration } from "@apis/generated";
 
-export type HaproxyConfigurationFront = {
-	raw: string;
-	global: string;
-	defaults: string;
-	frontends: Record<string, string>;
-	backends: Record<string, string>;
+export type HaproxyGlobalResource = {
+	daemon: boolean;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace Parsed {
-	export type Config = {
-		frontends: Record<string, Parsed.Frontend>;
-		backends: Record<string, Parsed.Backend>;
-	};
+export type HaproxyDefaultsResource = {
+	name: string;
+	mode: string | null;
+};
 
-	export type Frontend = {
-		// Name of the frontend
-		name: string;
+export type HaproxyBindResource = {
+	name: string;
+	address: string | null;
+	port: number | null;
+};
 
-		// Mappings of backends to use
-		mappings: FrontendMapping[];
+export type HaproxyAclResource = {
+	name: string;
+	criterion: string | null;
+	value: string | null;
+};
 
-		// ACL present in this mapping
-		acls: Record<FrontendAcl["name"], FrontendAcl>;
-	};
+export type HaproxyBackendSwitchingRuleResource = {
+	backendName: string;
+	cond: string | null;
+	condTest: string | null;
+};
 
-	export type FrontendAcl = {
-		// Name of the ACL
-		name: string;
+export type HaproxyServerResource = {
+	name: string;
+	address: string | null;
+	port: number | null;
+	check: string | null;
+};
 
-		activator: HostAclActivator;
-	};
+export type HaproxyFrontendResource = {
+	name: string;
+	mode: string | null;
+	defaultBackend: string | null;
+	binds: HaproxyBindResource[];
+	acls: HaproxyAclResource[];
+	backendSwitchingRules: HaproxyBackendSwitchingRuleResource[];
+};
 
-	export type HostAclActivator = {
-		host: string;
-	};
+export type HaproxyBackendResource = {
+	name: string;
+	mode: string | null;
+	balance: string | null;
+	servers: HaproxyServerResource[];
+};
 
-	export type FrontendMapping = {
-		// Name of the ACL to use
-		acl?: string;
-		// Name of the backend to use
-		backend: string;
-	};
+export type HaproxySummary = {
+	frontendCount: number;
+	backendCount: number;
+	serverCount: number;
+};
 
-	export type Backend = {
-		name: string;
-		servers: BackendServer[];
-	};
-
-	export type BackendServer = {
-		name: string;
-		host: string;
-		port: number;
-		checked: boolean;
-	};
-}
+export type HaproxyResourceSnapshot = {
+	version: number;
+	global: HaproxyGlobalResource;
+	defaults: HaproxyDefaultsResource[];
+	frontends: HaproxyFrontendResource[];
+	backends: HaproxyBackendResource[];
+	summary: HaproxySummary;
+};
 
 export type ConfigState = {
-	raw: HaproxyConfiguration;
-	parsed: Parsed.Config;
-	current: HaproxyConfigurationFront;
-	previous: HaproxyConfigurationFront;
+	current: HaproxyResourceSnapshot;
+	previous: HaproxyResourceSnapshot;
 	calls: {
 		validate?: PromiseState;
 		save?: PromiseState;

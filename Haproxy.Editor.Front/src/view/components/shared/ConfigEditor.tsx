@@ -1,7 +1,7 @@
 import Editor, { type Monaco } from "@monaco-editor/react";
-import { editor } from "monaco-editor";
+import { editor, Position } from "monaco-editor";
 
-function handleEditorWillMount(monaco: Monaco) {
+function registerHaproxyLanguage(monaco: Monaco) {
 	monaco.languages.register({ id: "haproxy" });
 
 	monaco.languages.setMonarchTokensProvider("haproxy", {
@@ -23,7 +23,7 @@ function handleEditorWillMount(monaco: Monaco) {
 	});
 
 	monaco.editor.defineTheme("haproxyTheme", {
-		base: "vs", // or "vs-dark"
+		base: "vs",
 		inherit: true,
 		colors: {},
 		rules: [
@@ -37,7 +37,7 @@ function handleEditorWillMount(monaco: Monaco) {
 	});
 
 	monaco.languages.registerCompletionItemProvider("haproxy", {
-		provideCompletionItems: (model, position) => {
+		provideCompletionItems: (model: editor.ITextModel, position: Position) => {
 			const word = model.getWordUntilPosition(position);
 
 			const range = {
@@ -59,39 +59,30 @@ function handleEditorWillMount(monaco: Monaco) {
 					{ label: "mode", kind: monaco.languages.CompletionItemKind.Property, insertText: "mode ", range },
 					{ label: "option", kind: monaco.languages.CompletionItemKind.Property, insertText: "option ", range },
 					{ label: "timeout", kind: monaco.languages.CompletionItemKind.Property, insertText: "timeout ", range },
-					{ label: "acl", kind: monaco.languages.CompletionItemKind.Function, insertText: "acl ", range },
-					{ label: "http-request", kind: monaco.languages.CompletionItemKind.Function, insertText: "http-request ", range },
-					{ label: "http-response", kind: monaco.languages.CompletionItemKind.Function, insertText: "http-response ", range },
-					{ label: "balance", kind: monaco.languages.CompletionItemKind.Property, insertText: "balance ", range },
-					{ label: "stats", kind: monaco.languages.CompletionItemKind.Function, insertText: "stats ", range },
-					{ label: "tcp-request", kind: monaco.languages.CompletionItemKind.Function, insertText: "tcp-request ", range },
-					{ label: "tcp-response", kind: monaco.languages.CompletionItemKind.Function, insertText: "tcp-response ", range },
-					{ label: "use_backend", kind: monaco.languages.CompletionItemKind.Function, insertText: "use_backend ", range },
-					{ label: "default_backend", kind: monaco.languages.CompletionItemKind.Function, insertText: "default_backend ", range },
-					{ label: "errorfile", kind: monaco.languages.CompletionItemKind.Function, insertText: "errorfile ", range },
-					{ label: "log", kind: monaco.languages.CompletionItemKind.Property, insertText: "log ", range },
-					{ label: "stick-table", kind: monaco.languages.CompletionItemKind.Function, insertText: "stick-table ", range },
-					{ label: "stick", kind: monaco.languages.CompletionItemKind.Function, insertText: "stick ", range },
-					{ label: "reqadd", kind: monaco.languages.CompletionItemKind.Function, insertText: "reqadd ", range },
-					{ label: "rspadd", kind: monaco.languages.CompletionItemKind.Function, insertText: "rspadd ", range },
 				],
 			};
 		},
 	});
 }
 
+function handleEditorWillMount(monaco: Monaco) {
+	registerHaproxyLanguage(monaco);
+}
+
 type ConfigEditorProps = {
 	content: string;
+	language?: "haproxy" | "json";
+	height?: string;
 } & ({ disabled: true } | { disabled?: false; onChange: (value: string | undefined, ev: editor.IModelContentChangedEvent) => void });
 
 export function ConfigEditor(props: ConfigEditorProps) {
 	return (
 		<Editor
-			theme="haproxyTheme"
-			language={"haproxy"}
-			height={"100%"}
-			defaultLanguage="haproxy"
-			defaultValue={props.content}
+			theme={props.language === "json" ? "vs" : "haproxyTheme"}
+			language={props.language ?? "haproxy"}
+			height={props.height ?? "100%"}
+			value={props.content}
+			options={{ readOnly: props.disabled, minimap: { enabled: false } }}
 			beforeMount={handleEditorWillMount}
 			onChange={!props.disabled ? props.onChange : undefined}
 		/>

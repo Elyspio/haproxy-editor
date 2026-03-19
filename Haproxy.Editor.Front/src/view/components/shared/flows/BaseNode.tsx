@@ -1,8 +1,7 @@
-import type { NodeProps } from "@xyflow/react/dist/esm/types";
-import { Paper, Stack, Typography } from "@mui/material";
+import type { NodeProps } from "@xyflow/react";
 import { Handle } from "@xyflow/react";
-import { Parsed } from "@modules/config/config.types";
-import FrontendAcl = Parsed.FrontendAcl;
+import { Paper, Stack, Typography } from "@mui/material";
+import type { HaproxyAclResource, HaproxyBindResource } from "@modules/config/config.types";
 
 export type DefaultNodeProps = NodeProps & {
 	data: {
@@ -14,9 +13,9 @@ export type DefaultNodeProps = NodeProps & {
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace NodeData {
-	export type Frontend = { type: "frontend"; name: string };
+	export type Frontend = { type: "frontend"; name: string; bindings: HaproxyBindResource[] };
 	export type Server = { type: "server"; name: string; host: string };
-	export type Backend = { type: "backend"; name: string; acl: FrontendAcl };
+	export type Backend = { type: "backend"; name: string; acl?: HaproxyAclResource; mode?: string };
 	export type Any = NodeData.Frontend | NodeData.Backend | NodeData.Server;
 }
 

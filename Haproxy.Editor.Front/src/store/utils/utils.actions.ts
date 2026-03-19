@@ -1,19 +1,21 @@
 import { AsyncThunkPayloadCreator, createAction as _createAction, createAsyncThunk as _createAsyncThunk, isRejected, type UnknownAction } from "@reduxjs/toolkit";
 import type { IdWindow } from "./utils.types";
 import type { StoreState } from "@store/store.reducers";
-import { Container } from "inversify";
+import { Container, ServiceIdentifier } from "inversify";
 import { ReactNode } from "react";
 import { toast, ToastOptions } from "react-toastify";
-
-type Constructor<T> = new (...args: never[]) => T;
 
 export type ExtraArgument = {
 	container: Container;
 	idWindow: IdWindow;
 };
 
-export function getService<T>(service: Constructor<T>, extra: ExtraArgument): T {
-	return extra.container.get(service);
+export function getService<T>(service: ServiceIdentifier<T>, extra: ExtraArgument): T {
+	const s = extra.container.get(service);
+
+	if (!s) throw new Error(`Service ${String(service)} not found in container`);
+
+	return s;
 }
 
 export function throwIfRejected(action: UnknownAction) {

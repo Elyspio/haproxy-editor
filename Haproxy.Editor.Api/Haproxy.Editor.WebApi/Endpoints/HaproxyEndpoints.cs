@@ -1,7 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Haproxy.Editor.Abstractions.Data;
+﻿using Haproxy.Editor.Abstractions.Data;
 using Haproxy.Editor.Abstractions.Interfaces.Services;
-using ValidationResult = Haproxy.Editor.Abstractions.Data.ValidationResult;
 
 namespace Haproxy.Editor.Endpoints;
 
@@ -19,17 +17,17 @@ public static class HaproxyEndpoints
 		return app;
 	}
 
-	private static Task<HaproxyConfiguration> GetConfig(IHaproxyService haproxyService)
+	private static Task<HaproxyResourceSnapshot> GetConfig(IHaproxyService haproxyService)
 	{
 		return haproxyService.GetConfig();
 	}
 
-	private static Task SetConfig(HaproxyConfiguration config, IHaproxyService haproxyService)
+	private static Task SetConfig(HaproxyResourceSnapshot config, IHaproxyService haproxyService)
 	{
 		return haproxyService.SaveConfig(config);
 	}
 
-	private static async Task<IResult> ValidateConfig(HaproxyConfiguration config, IHaproxyService haproxyService)
+	private static async Task<IResult> ValidateConfig(HaproxyResourceSnapshot config, IHaproxyService haproxyService)
 	{
 		var result = await haproxyService.ValidateConfig(config);
 

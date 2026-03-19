@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { addEdge, Background, ConnectionLineType, type Node, ReactFlow } from "@xyflow/react";
+import type { Edge } from "@xyflow/react";
+import { addEdge, Background, type Connection, ConnectionLineType, type Node, ReactFlow } from "@xyflow/react";
 import dagre from "@dagrejs/dagre";
 import "@xyflow/react/dist/style.css";
-import type { Edge } from "@xyflow/react/dist/esm/types";
-import type { Connection } from "@xyflow/system/dist/esm/types/general";
 import { useAppSelector } from "@store/utils/utils.selectors";
-import { type ConfigState } from "@modules/config/config.types";
+import { type HaproxyAclResource, type HaproxyResourceSnapshot } from "@modules/config/config.types";
 import { NodeData } from "@components/shared/flows/BaseNode";
 
 const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
@@ -55,49 +54,52 @@ function getNodeData(props: NodeData.Any) {
 	return props;
 }
 
-function convertConfigToFlow(conf: ConfigState["parsed"]): { nodes: Node[]; edges: Edge[] } {
-	// This function should convert the parsed Haproxy config into nodes and edges
+function findAcl(frontendAcls: HaproxyAclResource[], condTest: string): HaproxyAclResource | undefined {
+	return frontendAcls.find((acl) => condTest.includes(acl.name));
+}
+
+export function convertSnapshotToFlow(conf: HaproxyResourceSnapshot): { nodes: Node[]; edges: Edge[] } {
 	const edges: Edge[] = [];
 	const nodes: Node[] = [];
 
-	for (const [id, frontend] of Object.entries(conf.frontends)) {
-		const idFrontend = getId("frontend", id);
+	for (const frontend of conf.frontends) {
+		const idFrontend = getId("frontend", frontend.name);
 		const node = {
 			id: idFrontend,
 			type: "frontend",
-			data: getNodeData({ type: "frontend", name: id }),
-			position: { x: 0, y: 0 }, // Position will be set later
+			data: getNodeData({ type: "frontend", name: frontend.name, bindings: frontend.binds }),
+			position: { x: 0, y: 0 },
 		};
 
 		nodes.push(node);
 
-		for (const mapping of frontend.mappings) {
+		for (const mapping of frontend.backendSwitchingRules) {
 			edges.push({
-				id: `edge-${id}-${mapping.backend}`,
+				id: `edge-${frontend.name}-${mapping.backendName}`,
 				source: idFrontend,
-				data: { label: mapping.acl ? `host: ${mapping.acl}` : `` },
-				target: getId("backend", mapping.backend),
+				data: { label: String(mapping.condTest ?? "") },
+				target: getId("backend", mapping.backendName),
 				type: "default",
 			});
 		}
 	}
 
-	for (const [id, backend] of Object.entries(conf.backends)) {
-		const frontend = Object.values(conf.frontends).find((f) => f.mappings.some((m) => m.backend === id));
+	for (const backend of conf.backends) {
+		const frontend = conf.frontends.find((f) => f.backendSwitchingRules.some((m) => m.backendName === backend.name));
 
 		if (!frontend) {
-			continue; // Skip backends that are not linked to any frontend
+			continue;
 		}
 
-		const aclName = frontend.mappings.find((m) => m.backend === id)!.acl!;
-		const acl = frontend.acls[aclName];
+		const rule = frontend.backendSwitchingRules.find((m) => m.backendName === backend.name);
+		const acl = rule ? findAcl(frontend.acls, String(rule.condTest ?? "")) : undefined;
 
-		const idBackend = getId("backend", id);
+		const idBackend = getId("backend", backend.name);
 		const node: Node = {
 			id: idBackend,
 			type: "backend",
-			data: getNodeData({ type: "backend", acl, name: id }),
-			position: { x: 0, y: 0 }, // Position will be set later
+			data: getNodeData({ type: "backend", acl, name: backend.name, mode: String(backend.mode ?? "") }),
+			position: { x: 0, y: 0 },
 		};
 
 		nodes.push(node);
@@ -106,15 +108,15 @@ function convertConfigToFlow(conf: ConfigState["parsed"]): { nodes: Node[]; edge
 			nodes.push({
 				id: `${idBackend}-${server.name}`,
 				type: "server",
-				data: getNodeData({ type: "server", name: server.name, host: `${server.host}:${server.port}` }),
-				position: { x: 0, y: 0 }, // Position will be set later
+				data: getNodeData({ type: "server", name: server.name, host: `${server.address ?? ""}:${server.port ?? ""}` }),
+				position: { x: 0, y: 0 },
 			});
 
 			edges.push({
-				id: `edge-${id}-${server.name}`,
+				id: `edge-${backend.name}-${server.name}`,
 				source: idBackend,
 				target: `${idBackend}-${server.name}`,
-				data: { label: server.checked ? "Checked" : "Unchecked" },
+				data: { label: String(server.check ?? "") },
 			});
 		}
 	}
@@ -132,7 +134,7 @@ const nodeTypes = {
 };
 
 export const HaproxySummaryGraph = () => {
-	const parsedConfig = useAppSelector((x) => x.config.parsed);
+	const snapshot = useAppSelector((x) => x.config.current);
 
 	const [nodes, setNodes] = useState([] as Node[]);
 	const [edges, setEdges] = useState([] as Edge[]);
@@ -140,12 +142,12 @@ export const HaproxySummaryGraph = () => {
 	const [direction] = React.useState<Direction>("LR");
 
 	useEffect(() => {
-		const { nodes, edges } = convertConfigToFlow(parsedConfig);
+		const { nodes, edges } = convertSnapshotToFlow(snapshot);
 		const layoutValues = getLayoutedElements(nodes, edges, direction);
 
 		setNodes(layoutValues.nodes);
 		setEdges(layoutValues.edges);
-	}, [parsedConfig, direction]);
+	}, [snapshot, direction]);
 
 	const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge({ ...params, type: ConnectionLineType.SmoothStep, animated: true }, eds)), []);
 

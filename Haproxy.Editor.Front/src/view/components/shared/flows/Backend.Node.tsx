@@ -5,5 +5,6 @@ type BackendNodeProps = Omit<DefaultNodeProps, "data"> & { data: NodeData.Backen
 export const backendBgColor = "#ffdd88";
 
 export default function BackendNode(props: Readonly<BackendNodeProps>) {
-	return <BaseNode textColor={"black"} bgColor={backendBgColor} {...props} data={{ label: props.data.name, subline: `host: ${props.data.acl.activator.host}` }} />;
+	const aclText = props.data.acl ? `${props.data.acl.name}: ${props.data.acl.value ?? ""}` : props.data.mode ?? "";
+	return <BaseNode textColor={"black"} bgColor={backendBgColor} {...props} data={{ label: props.data.name, subline: aclText }} />;
 }

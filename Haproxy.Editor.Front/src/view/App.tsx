@@ -13,6 +13,9 @@ import { DefaultEdit } from "@components/Default.Edit";
 import { ToastContainer } from "react-toastify";
 import { RawView } from "@components/Raw.View";
 import { Summary } from "@components/summary/Summary";
+import { FrontendEdit } from "@components/frontend/Frontend.Edit";
+import { BackendCreate } from "@components/backend/Backend.Create";
+import { BackendEdit } from "@components/backend/Backend.Edit";
 
 const router = createBrowserRouter(
 	createRoutesFromChildren(
@@ -40,6 +43,30 @@ const router = createBrowserRouter(
 					element={
 						<ProtectedRoute>
 							<FrontendCreate />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path={routes.frontend.edit.path}
+					element={
+						<ProtectedRoute>
+							<FrontendEdit />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path={routes.backend.create.path}
+					element={
+						<ProtectedRoute>
+							<BackendCreate />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path={routes.backend.edit.path}
+					element={
+						<ProtectedRoute>
+							<BackendEdit />
 						</ProtectedRoute>
 					}
 				/>

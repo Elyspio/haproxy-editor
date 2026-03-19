@@ -1,57 +1,30 @@
 import { inject, injectable } from "inversify";
 import { Api } from "@apis/api";
-import type { HaproxyConfigurationFront } from "@modules/config/config.types";
-import type { HaproxyConfiguration } from "@apis/generated";
+import type { HaproxyResourceSnapshot } from "@modules/config/config.types";
+import { normalizeSnapshot } from "@modules/config/config.utils";
 
-type ValidateConfigResult = { success: boolean; error?: string };
+type ValidateConfigResult = { success: true } | { success: false; error: string };
 
 @injectable()
 export class ConfigService {
-	@inject(Api)
-	private readonly api: Api = null!;
+	constructor(@inject(Api) private readonly api: Api) {}
 
-	async getConfig(): Promise<[HaproxyConfiguration, HaproxyConfigurationFront]> {
-		const result = await this.api.v1.getHaproxyConfig();
-
-		const data = result.data;
-
-		return [
-			data,
-			{
-				raw: data.raw,
-				global: data.global.join("\n"),
-				defaults: data.defaults.join("\n"),
-				frontends: Object.fromEntries(Object.entries<string[]>(data.frontends).map(([key, value]) => [key, value.join("\n")])),
-				backends: Object.fromEntries(Object.entries<string[]>(data.backends).map(([key, value]) => [key, value.join("\n")])),
-			},
-		];
+	async getConfig(): Promise<HaproxyResourceSnapshot> {
+		const { data } = await this.api.axios.get(`${this.api.baseUrl}/haproxy/config`);
+		return normalizeSnapshot(data);
 	}
 
-	async updateConfig(config: HaproxyConfigurationFront) {
-		await this.api.v1.saveHaproxyConfig(this.convertToApi(config));
+	async updateConfig(config: HaproxyResourceSnapshot) {
+		await this.api.axios.put(`${this.api.baseUrl}/haproxy/config`, config);
 	}
 
-	async validateConfig(config: HaproxyConfigurationFront): Promise<ValidateConfigResult> {
-		let success = false;
-		let error: string | undefined = undefined;
+	async validateConfig(config: HaproxyResourceSnapshot): Promise<ValidateConfigResult> {
 		try {
-			await this.api.v1.validateHaproxyConfig(this.convertToApi(config));
-			success = true;
+			await this.api.axios.post(`${this.api.baseUrl}/haproxy/config/validate`, config);
+			return { success: true };
 		} catch (e: any) {
-			console.log("Configuration validation failed", e);
-			error = e.response?.data ?? "Unknown error";
+			const error = e.response?.data ?? e.message ?? "Unknown error";
+			return { success: false, error: String(error) };
 		}
-
-		return { success, error };
-	}
-
-	private convertToApi(config: HaproxyConfigurationFront): HaproxyConfiguration {
-		return {
-			raw: config.raw,
-			global: config.global.split("\n"),
-			defaults: config.defaults.split("\n"),
-			frontends: Object.fromEntries(Object.entries(config.frontends).map(([key, value]) => [key, value.split("\n")])),
-			backends: Object.fromEntries(Object.entries(config.backends).map(([key, value]) => [key, value.split("\n")])),
-		};
 	}
 }

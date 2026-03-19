@@ -25,13 +25,11 @@ public class ValidatorHaproxyAdapter : TracingAdapter, IValidatorHaproxyAdapter
 
 
 		if (_env.IsDevelopment())
-		{
 			return Random.Shared.Next(0, 10) < 5
 				? new ValidationResult(true)
 				: new ValidationResult(false, "Validation failed in development mode.");
-		}
-		
-		
+
+
 		var process = new Process
 		{
 			StartInfo = new ProcessStartInfo
@@ -50,7 +48,7 @@ public class ValidatorHaproxyAdapter : TracingAdapter, IValidatorHaproxyAdapter
 		await process.WaitForExitAsync();
 
 		var error = await process.StandardError.ReadToEndAsync();
-		
+
 		var exitCode = process.ExitCode;
 
 		return new ValidationResult(exitCode == 0, error);

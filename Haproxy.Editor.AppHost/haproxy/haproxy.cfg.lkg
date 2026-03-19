@@ -1,0 +1,191 @@
+resolvers dns
+  nameserver pihole 10.0.0.240:53
+  
+  resolve_retries 3
+  timeout resolve 1s
+  timeout retry   1s
+  
+  # Cache la réponse 30s (ajuste selon la volatilité de tes services)
+  hold valid 60s
+
+userlist dataplaneapi
+  user admin insecure-password 651zdaz651d65za465d8912302139
+
+global
+	log 127.0.0.1:514 local0
+	chroot /var/lib/haproxy
+	stats timeout 30s
+	user haproxy
+	group haproxy
+	daemon
+
+	# Default SSL material locations
+	ca-base /etc/ssl/certs
+	crt-base /etc/ssl/private
+
+	# See: https://ssl-config.mozilla.org/#server=haproxy&server-version=2.0.3&config=intermediate
+        #ssl-default-bind-ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
+        #ssl-default-bind-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256
+        #ssl-default-bind-options ssl-min-ver TLSv1.2 no-tls-tickets
+
+defaults
+	log	global
+	mode	http
+	option	httplog
+        timeout connect 5000
+        timeout client  50000
+        timeout server  50000
+
+	default-server resolvers dns init-addr last,libc,none resolve-prefer ipv4
+
+frontend fg_postgres
+    mode tcp
+	option tcplog
+
+	bind *:5432
+	
+	acl internal_net src 10.0.1.0/24 10.0.10.0/24
+	acl private_net src 10.1.0.0/24
+	acl elydesk src 10.0.0.1/32
+	
+	use_backend postgres if internal_net || private_net || elydesk
+
+backend postgres
+    mode tcp
+    server db-node-01 db-node-01.elylan:6432 
+    server db-node-02 db-node-02.elylan:6432 
+    server db-node-03 db-node-03.elylan:6432 
+	
+
+
+frontend fe_https
+	bind *:80
+	
+	option forwardfor
+
+	# Inject the original client scheme & host
+	http-request set-header X-Forwarded-Proto https if { ssl_fc }
+	http-request set-header X-Real-IP %[src]
+	http-request set-header X-Forwarded-Host  %[req.hdr(host)]
+	
+	acl local_net src 10.0.0.0/24
+	acl internal_net src 10.0.1.0/24 10.0.10.0/24
+	acl private_net src 10.1.0.0/24
+	acl elylan_net src 10.0.0.0/8
+ 
+	acl coexya-sous-marin-jaune-path-acl path -i -m beg /coexya/burgers
+	http-request redirect location https://burgers.coexya.elyspio.fr code 301 if coexya-sous-marin-jaune-path-acl
+
+	http-request use-service prometheus-exporter if { path /metrics }  elylan_net
+
+	# Block keycloak admin interfaces from the outside
+	acl auth-acl hdr(host) -i auth.elyspio.fr
+	acl keycloak-admin-master-path-acl path_beg -i /admin   /realms/master  
+	http-request deny if !elylan_net auth-acl keycloak-admin-master-path-acl 
+
+	# Internal
+
+	acl pgadmin-acl hdr(host) -i pgadmin.elylan
+	use_backend kube if pgadmin-acl elylan_net
+
+	acl registry-acl hdr(host) -i registry.elylan
+	use_backend registry if registry-acl elylan_net
+	
+	acl traefik-acl hdr(host) -i traefik.elylan
+	use_backend kube if traefik-acl elylan_net 
+
+	acl grafana-acl hdr(host) -i grafana.elylan
+	use_backend kube if grafana-acl elylan_net 
+
+	acl longhorn-acl hdr(host) -i longhorn.elylan
+	use_backend kube if longhorn-acl elylan_net 
+
+	acl kuma-acl hdr(host) -i kuma.telemetry.elylan
+	use_backend kuma if kuma-acl elylan_net 
+
+
+	# Internal / Telemetry
+	
+	acl prometheus-acl hdr(host) -i prometheus.telemetry.elylan
+	use_backend kube if prometheus-acl elylan_net	
+
+	acl quickwit-acl hdr(host) -i quickwit.telemetry.elylan
+	use_backend kube if quickwit-acl elylan_net	
+
+	acl loki-acl hdr(host) -i loki.telemetry.elylan
+	use_backend kube if loki-acl elylan_net	
+
+	acl jaeger-acl hdr(host) -i jaeger.telemetry.elylan
+	use_backend kube if jaeger-acl elylan_net
+
+	acl grafana-acl hdr(host) -i grafana.telemetry.elylan
+	use_backend kube if grafana-acl elylan_net
+
+	acl garage-s3-acl hdr(host) -i s3.garage.storage.elylan
+	use_backend garage-s3 if garage-s3-acl elylan_net
+	
+	acl garage-ui-acl hdr(host) -i garage.storage.elylan
+	use_backend garage-ui if garage-ui-acl elylan_net
+
+	# Public
+
+	acl coexya-sous-marin-jaune-acl hdr(host) -i burgers.coexya.elyspio.fr
+	use_backend kube if coexya-sous-marin-jaune-acl
+
+	acl vaultwarden-acl hdr(host) -i vaultwarden.elyspio.fr
+	use_backend kube if vaultwarden-acl
+
+	acl vault-acl hdr(host) -i vault.elyspio.fr
+	use_backend kube if vault-acl
+
+	acl proxmox-acl hdr(host) -i proxmox.elyspio.fr
+	use_backend kube if proxmox-acl	
+
+	acl unifi-acl hdr(host) -i unifi.elyspio.fr
+	use_backend kube if unifi-acl
+	
+	acl home-assistant-acl hdr(host) -i ha.elyspio.fr
+	use_backend home-assistant if home-assistant-acl
+	
+
+
+	use_backend kube if auth-acl 
+
+	acl torrent-acl hdr(host) -i torrent.elyspio.fr
+	use_backend kube if torrent-acl
+
+	default_backend  default_error
+
+
+backend default_error
+	http-request silent-drop 
+
+
+backend home-assistant
+	server home-assistant home-assistant.elylan:8123 check
+
+backend proxmox
+	server promox proxmox.elylan:8006 check
+
+backend kube
+	server kube-traefik 10.0.1.120:443 check
+
+backend registry
+	option httpclose
+	server registry registry-node-01.elylan:5000 check
+
+backend garage-ui
+	server garage-ui-01 db-node-01.elylan:3909 check
+	server garage-ui-02 db-node-02.elylan:3909 check
+	server garage-ui-03 db-node-03.elylan:3909 check
+
+backend garage-s3
+	server garage-s3-01 db-node-01.elylan:3900 check
+	server garage-s3-02 db-node-02.elylan:3900 check
+	server garage-s3-03 db-node-03.elylan:3900 check
+
+backend kuma
+	server kuma elylan-kuma.elylan:8080 check
+
+
+
