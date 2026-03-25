@@ -9,6 +9,12 @@ export const routes = {
 		summary: {
 			path: "/",
 		},
+		flow: {
+			path: "/flow",
+		},
+		management: {
+			path: "/workspace",
+		},
 	},
 	frontend: {
 		create: {
@@ -33,7 +39,7 @@ export const routes = {
 	},
 	raw: {
 		view: {
-			path: "raw/edit",
+			path: "/raw",
 		},
 	},
 	default: {

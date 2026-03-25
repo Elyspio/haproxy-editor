@@ -21,6 +21,31 @@ public class HaproxyService : TracingService, IHaproxyService
 		return LoadSnapshot();
 	}
 
+	public async Task<DashboardSnapshot> GetDashboardSnapshot()
+	{
+		using var _ = LogService();
+
+		var configTask = LoadSnapshot();
+		var healthTask = _client.GetHealthAsync();
+		var statsTask = _client.GetStatsAsync();
+
+		await Task.WhenAll(configTask, healthTask, statsTask);
+
+		var config = await configTask;
+		var health = await healthTask;
+		var stats = await statsTask;
+		var runtimeServers = await LoadRuntimeServers(config.Backends);
+		var backends = BuildRuntimeBackends(config, stats, runtimeServers);
+		var alerts = BuildDashboardAlerts(config, health, stats, backends);
+
+		return new DashboardSnapshot
+		{
+			Summary = BuildDashboardSummary(config, health, alerts, backends),
+			Alerts = alerts,
+			Backends = backends,
+		};
+	}
+
 	public async Task SaveConfig(HaproxyResourceSnapshot config)
 	{
 		using var _ = LogService();
@@ -96,6 +121,287 @@ public class HaproxyService : TracingService, IHaproxyService
 				ServerCount = backends.Sum(x => x.Servers.Count),
 			},
 		};
+	}
+
+	private async Task<Dictionary<string, IReadOnlyCollection<Generated.Runtime_server>>> LoadRuntimeServers(IEnumerable<HaproxyBackendResource> backends)
+	{
+		var tasks = backends.Select(async backend =>
+		{
+			var servers = await _client.GetAllRuntimeServerAsync(backend.Name);
+			return new KeyValuePair<string, IReadOnlyCollection<Generated.Runtime_server>>(backend.Name, servers.ToList());
+		});
+
+		return (await Task.WhenAll(tasks)).ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal);
+	}
+
+	private static List<RuntimeBackendStatus> BuildRuntimeBackends(
+		HaproxyResourceSnapshot config,
+		Generated.Native_stats? stats,
+		IReadOnlyDictionary<string, IReadOnlyCollection<Generated.Runtime_server>> runtimeServers)
+	{
+		var allStats = stats?.Stats?.ToList() ?? [];
+		var backendStats = allStats
+			.Where(x => x.Type == Generated.Native_statType.Backend)
+			.ToDictionary(GetStatName, x => x, StringComparer.Ordinal);
+		var serverStats = allStats
+			.Where(x => x.Type == Generated.Native_statType.Server)
+			.GroupBy(x => $"{x.Backend_name ?? string.Empty}/{x.Name ?? string.Empty}", StringComparer.Ordinal)
+			.ToDictionary(x => x.Key, x => x.Last(), StringComparer.Ordinal);
+
+		return config.Backends.Select(backend =>
+		{
+			runtimeServers.TryGetValue(backend.Name, out var runtimeBackendServers);
+			backendStats.TryGetValue(backend.Name, out var backendStat);
+
+			var runtimeByName = (runtimeBackendServers ?? [])
+				.Where(x => !string.IsNullOrWhiteSpace(x.Name))
+				.ToDictionary(x => x.Name!, x => x, StringComparer.Ordinal);
+
+			var servers = backend.Servers.Select(server =>
+			{
+				runtimeByName.TryGetValue(server.Name, out var runtimeServer);
+				serverStats.TryGetValue($"{backend.Name}/{server.Name}", out var serverStat);
+
+				return new RuntimeServerStatus
+				{
+					Name = server.Name,
+					Status = DetermineServerStatus(runtimeServer, serverStat),
+					Address = runtimeServer?.Address ?? server.Address,
+					Port = runtimeServer?.Port ?? server.Port,
+					AdminState = runtimeServer?.Admin_state?.ToString()?.ToLowerInvariant(),
+					OperationalState = runtimeServer?.Operational_state?.ToString()?.ToLowerInvariant(),
+					CheckStatus = serverStat?.Stats?.Check_status?.ToString()?.ToLowerInvariant(),
+					CurrentSessions = serverStat?.Stats?.Scur ?? 0,
+					SessionRate = serverStat?.Stats?.Rate ?? serverStat?.Stats?.Conn_rate ?? 0,
+				};
+			}).ToList();
+
+			return new RuntimeBackendStatus
+			{
+				Name = backend.Name,
+				Status = DetermineBackendStatus(backendStat, servers),
+				CurrentSessions = backendStat?.Stats?.Scur ?? 0,
+				SessionRate = backendStat?.Stats?.Rate ?? backendStat?.Stats?.Conn_rate ?? 0,
+				BytesIn = backendStat?.Stats?.Bin ?? 0,
+				BytesOut = backendStat?.Stats?.Bout ?? 0,
+				HealthyServers = servers.Count(x => x.Status == RuntimeStatus.Up),
+				DownServers = servers.Count(x => x.Status == RuntimeStatus.Down),
+				MaintenanceServers = servers.Count(x => x.Status == RuntimeStatus.Maintenance),
+				Servers = servers,
+			};
+		}).ToList();
+	}
+
+	private static DashboardSummary BuildDashboardSummary(
+		HaproxyResourceSnapshot config,
+		Generated.Health? health,
+		IReadOnlyCollection<DashboardAlert> alerts,
+		IReadOnlyCollection<RuntimeBackendStatus> backends)
+	{
+		var criticalAlerts = alerts.Count(x => x.Severity == DashboardAlertSeverity.Critical);
+		var totalRoutes = config.Frontends.Sum(x => x.BackendSwitchingRules.Count);
+		var activeServices = backends.Sum(x => x.HealthyServers);
+		var downServices = backends.Sum(x => x.DownServers);
+
+		return new DashboardSummary
+		{
+			GeneratedAt = DateTimeOffset.UtcNow,
+			RuntimeStatus = health?.Haproxy switch
+			{
+				Generated.HealthHaproxy.Up => RuntimeStatus.Up,
+				Generated.HealthHaproxy.Down => RuntimeStatus.Down,
+				_ => RuntimeStatus.Unknown,
+			},
+			Alerts = new DashboardKpi
+			{
+				Title = "Alerts",
+				Value = criticalAlerts > 0 ? criticalAlerts : alerts.Count,
+				Subtitle = criticalAlerts > 0 ? $"{criticalAlerts} critical issues" : alerts.Count == 0 ? "No active issues" : $"{alerts.Count} operational notices",
+				Tone = criticalAlerts > 0 ? DashboardTone.Critical : alerts.Count > 0 ? DashboardTone.Warning : DashboardTone.Success,
+				Trend = [alerts.Count, criticalAlerts, backends.Sum(x => x.DownServers), backends.Sum(x => x.MaintenanceServers)],
+			},
+			Routes = new DashboardKpi
+			{
+				Title = "Routes",
+				Value = totalRoutes,
+				Subtitle = totalRoutes == 0 ? "No switching rules" : $"{totalRoutes} redirected rules",
+				Tone = totalRoutes > 0 ? DashboardTone.Warning : DashboardTone.Neutral,
+				Trend = config.Frontends.Select(x => x.BackendSwitchingRules.Count).DefaultIfEmpty(0).ToList(),
+			},
+			Services = new DashboardKpi
+			{
+				Title = "Services",
+				Value = activeServices,
+				Subtitle = downServices > 0 ? $"{downServices} services degraded" : $"{backends.Count} backend groups monitored",
+				Tone = downServices > 0 ? DashboardTone.Warning : DashboardTone.Info,
+				Trend = backends.Select(x => x.SessionRate).DefaultIfEmpty(0).ToList(),
+			},
+		};
+	}
+
+	private static List<DashboardAlert> BuildDashboardAlerts(
+		HaproxyResourceSnapshot config,
+		Generated.Health? health,
+		Generated.Native_stats? stats,
+		IReadOnlyCollection<RuntimeBackendStatus> backends)
+	{
+		var alerts = new List<DashboardAlert>();
+
+		if (health?.Haproxy != Generated.HealthHaproxy.Up)
+		{
+			alerts.Add(new DashboardAlert
+			{
+				Id = "haproxy-health",
+				Severity = DashboardAlertSeverity.Critical,
+				Message = $"HAProxy health is {health?.Haproxy?.ToString()?.ToLowerInvariant() ?? "unknown"}.",
+				ResourceType = DashboardResourceType.Service,
+				ResourceName = "haproxy",
+			});
+		}
+
+		if (!string.IsNullOrWhiteSpace(stats?.Error))
+		{
+			alerts.Add(new DashboardAlert
+			{
+				Id = "stats-error",
+				Severity = DashboardAlertSeverity.Warning,
+				Message = stats!.Error!,
+				ResourceType = DashboardResourceType.Runtime,
+				ResourceName = "stats",
+			});
+		}
+
+		foreach (var backend in config.Backends.Where(x => x.Servers.Count == 0))
+		{
+			alerts.Add(new DashboardAlert
+			{
+				Id = $"backend-empty-{backend.Name}",
+				Severity = DashboardAlertSeverity.Critical,
+				Message = $"Backend {backend.Name} has no servers configured.",
+				ResourceType = DashboardResourceType.Backend,
+				ResourceName = backend.Name,
+			});
+		}
+
+		foreach (var frontend in config.Frontends)
+		{
+			var knownBackends = config.Backends.Select(x => x.Name).ToHashSet(StringComparer.Ordinal);
+			var hasDefaultBackend = !string.IsNullOrWhiteSpace(frontend.DefaultBackend);
+			var hasRules = frontend.BackendSwitchingRules.Count > 0;
+
+			if (!hasDefaultBackend && !hasRules)
+			{
+				alerts.Add(new DashboardAlert
+				{
+					Id = $"frontend-empty-{frontend.Name}",
+					Severity = DashboardAlertSeverity.Warning,
+					Message = $"Frontend {frontend.Name} has no route target.",
+					ResourceType = DashboardResourceType.Frontend,
+					ResourceName = frontend.Name,
+				});
+			}
+
+			if (hasDefaultBackend && !knownBackends.Contains(frontend.DefaultBackend!))
+			{
+				alerts.Add(new DashboardAlert
+				{
+					Id = $"frontend-default-{frontend.Name}",
+					Severity = DashboardAlertSeverity.Critical,
+					Message = $"Frontend {frontend.Name} points to missing backend {frontend.DefaultBackend}.",
+					ResourceType = DashboardResourceType.Frontend,
+					ResourceName = frontend.Name,
+				});
+			}
+
+			foreach (var rule in frontend.BackendSwitchingRules.Where(rule => !knownBackends.Contains(rule.BackendName)))
+			{
+				alerts.Add(new DashboardAlert
+				{
+					Id = $"frontend-rule-{frontend.Name}-{rule.BackendName}",
+					Severity = DashboardAlertSeverity.Critical,
+					Message = $"Routing rule on {frontend.Name} points to missing backend {rule.BackendName}.",
+					ResourceType = DashboardResourceType.Frontend,
+					ResourceName = frontend.Name,
+				});
+			}
+		}
+
+		foreach (var backend in backends.Where(x => x.DownServers > 0))
+		{
+			alerts.Add(new DashboardAlert
+			{
+				Id = $"backend-runtime-{backend.Name}",
+				Severity = backend.HealthyServers == 0 ? DashboardAlertSeverity.Critical : DashboardAlertSeverity.Warning,
+				Message = backend.HealthyServers == 0
+					? $"All services in backend {backend.Name} are unavailable."
+					: $"{backend.DownServers} services are down in backend {backend.Name}.",
+				ResourceType = DashboardResourceType.Backend,
+				ResourceName = backend.Name,
+			});
+		}
+
+		return alerts;
+	}
+
+	private static RuntimeStatus DetermineBackendStatus(Generated.Native_stat? backendStat, IReadOnlyCollection<RuntimeServerStatus> servers)
+	{
+		if (servers.Count == 0)
+		{
+			return RuntimeStatus.Empty;
+		}
+
+		if (servers.Any(x => x.Status == RuntimeStatus.Up) && servers.Any(x => x.Status == RuntimeStatus.Down))
+		{
+			return RuntimeStatus.Degraded;
+		}
+
+		if (servers.All(x => x.Status == RuntimeStatus.Down))
+		{
+			return RuntimeStatus.Critical;
+		}
+
+		if (servers.All(x => x.Status == RuntimeStatus.Maintenance))
+		{
+			return RuntimeStatus.Maintenance;
+		}
+
+		return backendStat?.Stats?.Status switch
+		{
+			Generated.Native_stat_statsStatus.UP => RuntimeStatus.Healthy,
+			Generated.Native_stat_statsStatus.No_check => RuntimeStatus.Healthy,
+			Generated.Native_stat_statsStatus.MAINT => RuntimeStatus.Maintenance,
+			Generated.Native_stat_statsStatus.DOWN => RuntimeStatus.Critical,
+			_ => servers.Any(x => x.Status == RuntimeStatus.Up) ? RuntimeStatus.Healthy : RuntimeStatus.Unknown,
+		};
+	}
+
+	private static RuntimeStatus DetermineServerStatus(Generated.Runtime_server? runtimeServer, Generated.Native_stat? serverStat)
+	{
+		if (runtimeServer?.Admin_state is Generated.Runtime_serverAdmin_state.Maint or Generated.Runtime_serverAdmin_state.Drain)
+		{
+			return RuntimeStatus.Maintenance;
+		}
+
+		if (runtimeServer?.Operational_state == Generated.Runtime_serverOperational_state.Down)
+		{
+			return RuntimeStatus.Down;
+		}
+
+		return serverStat?.Stats?.Status switch
+		{
+			Generated.Native_stat_statsStatus.UP => RuntimeStatus.Up,
+			Generated.Native_stat_statsStatus.No_check => RuntimeStatus.Up,
+			Generated.Native_stat_statsStatus.MAINT => RuntimeStatus.Maintenance,
+			Generated.Native_stat_statsStatus.DOWN => RuntimeStatus.Down,
+			_ => runtimeServer?.Operational_state == Generated.Runtime_serverOperational_state.Up ? RuntimeStatus.Up : RuntimeStatus.Unknown,
+		};
+	}
+
+	private static string GetStatName(Generated.Native_stat stat)
+	{
+		return stat.Backend_name
+			?? stat.Name
+			?? string.Empty;
 	}
 
 	private async Task<List<HaproxyFrontendResource>> BuildFrontends(IReadOnlyList<Generated.Frontend> frontends, string? transactionId)

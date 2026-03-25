@@ -1,288 +1,191 @@
-import * as React from "react";
-import { useTheme } from "@mui/material/styles";
+import { alpha, useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import Box from "@mui/material/Box";
-import Drawer from "@mui/material/Drawer";
-import List from "@mui/material/List";
-import Toolbar from "@mui/material/Toolbar";
-import BarChartIcon from "@mui/icons-material/BarChart";
-import LayersIcon from "@mui/icons-material/Layers";
-import { matchPath, useLocation } from "react-router";
-import { DRAWER_WIDTH, MINI_DRAWER_WIDTH } from "@/config/view.constants";
-import { PageItemSidebarDashboard } from "@components/dashboard/PageItem.Sidebar.Dashboard";
-import { HeaderItemSidebarDashboard } from "@components/dashboard/HeaderItem.Sidebar.Dashboard";
-import { DividerItemSidebarDashboard } from "@components/dashboard/DividerItem.Sidebar.Dashboard";
-import { getDrawerSxTransitionMixin, getDrawerWidthTransitionMixin } from "@/view/styles/dashboard.mixins";
-import DashboardSidebarContext from "@/view/context/Sidebar.Dashboard.context";
+import { Box, Divider, Drawer, List, ListItemButton, ListItemIcon, ListItemText, Stack, Typography } from "@mui/material";
+import { AnalyticsOutlined, DataObjectOutlined, DnsOutlined, HubOutlined, Inventory2Outlined, LanOutlined, RocketLaunchOutlined, TuneOutlined, ViewQuiltOutlined } from "@mui/icons-material";
+import { useLocation, useNavigate } from "react-router-dom";
 import { routes } from "@/config/view.config";
-import { Public } from "@mui/icons-material";
-import ConveyorBeltIcon from "@mui/icons-material/ConveyorBelt";
+import { useAuth } from "@/view/context/auth.context";
+import { useAppDispatch, useAppSelector } from "@store/utils/utils.selectors";
+import { setDashboardSelection } from "@modules/dashboard/dashboard.reducer";
+import { serializeSelection } from "@modules/dashboard/dashboard.utils";
 
 export interface DashboardSidebarProps {
 	expanded?: boolean;
 	setExpanded: (expanded: boolean) => void;
-	disableCollapsibleSidebar?: boolean;
-	container?: Element;
 }
 
-export function SidebarDashboard({ expanded = true, setExpanded, disableCollapsibleSidebar = false, container }: Readonly<DashboardSidebarProps>) {
+const DRAWER_WIDTH = 272;
+const MINI_DRAWER_WIDTH = 88;
+
+type NavigationItem = {
+	label: string;
+	icon: React.ReactNode;
+	path: string;
+	selection: { section: "summary" | "global" | "defaults" | "frontend" | "mapping" | "backend" | "acl" | "quickmap" | "raw" };
+};
+
+export function SidebarDashboard({ expanded = true, setExpanded }: Readonly<DashboardSidebarProps>) {
 	const theme = useTheme();
+	const location = useLocation();
+	const navigate = useNavigate();
+	const dispatch = useAppDispatch();
+	const { user } = useAuth();
+	const isDesktop = useMediaQuery(theme.breakpoints.up("lg"));
+	const currentSelection = useAppSelector((state) => state.dashboard.selection);
+	const width = expanded ? DRAWER_WIDTH : MINI_DRAWER_WIDTH;
 
-	const { pathname } = useLocation();
+	const dashboardItems: NavigationItem[] = [
+		{ label: "Summary", icon: <AnalyticsOutlined />, path: routes.dashboard.summary.path, selection: { section: "summary" } },
+		{ label: "Flow", icon: <ViewQuiltOutlined />, path: routes.dashboard.flow.path, selection: { section: "summary" } },
+	];
 
-	const [expandfrontendemIds, setExpandfrontendemIds] = React.useState<string[]>([]);
-
-	const isOverSmViewport = useMediaQuery(theme.breakpoints.up("sm"));
-	const isOverMdViewport = useMediaQuery(theme.breakpoints.up("md"));
-
-	const [isFullyExpanded, setIsFullyExpanded] = React.useState(expanded);
-	const [isFullyCollapsed, setIsFullyCollapsed] = React.useState(!expanded);
-
-	React.useEffect(() => {
-		if (expanded) {
-			const drawerWidthTransitionTimeout = setTimeout(() => {
-				setIsFullyExpanded(true);
-			}, theme.transitions.duration.enteringScreen);
-
-			return () => clearTimeout(drawerWidthTransitionTimeout);
-		}
-
-		setIsFullyExpanded(false);
-
-		return () => {};
-	}, [expanded, theme.transitions.duration.enteringScreen]);
-
-	React.useEffect(() => {
-		if (!expanded) {
-			const drawerWidthTransitionTimeout = setTimeout(() => {
-				setIsFullyCollapsed(true);
-			}, theme.transitions.duration.leavingScreen);
-
-			return () => clearTimeout(drawerWidthTransitionTimeout);
-		}
-
-		setIsFullyCollapsed(false);
-
-		return () => {};
-	}, [expanded, theme.transitions.duration.leavingScreen]);
-
-	const mini = !disableCollapsibleSidebar && !expanded;
-
-	const handleSetSidebarExpanded = React.useCallback(
-		(newExpanded: boolean) => () => {
-			setExpanded(newExpanded);
+	const modifyItems: NavigationItem[] = [
+		{
+			label: "Globals & Defaults",
+			icon: <TuneOutlined />,
+			path: `${routes.dashboard.management.path}?${serializeSelection({ section: "global" })}`,
+			selection: { section: "global" },
 		},
-		[setExpanded]
-	);
-
-	const handlePageItemClick = React.useCallback(
-		(itemId: string, hasNestedNavigation: boolean) => {
-			if (hasNestedNavigation && !mini) {
-				setExpandfrontendemIds((previousValue) =>
-					previousValue.includes(itemId) ? previousValue.filter((previousValueItemId) => previousValueItemId !== itemId) : [...previousValue, itemId]
-				);
-			} else if (!isOverSmViewport && !hasNestedNavigation) {
-				setExpanded(false);
-			}
+		{
+			label: "Frontends",
+			icon: <LanOutlined />,
+			path: `${routes.dashboard.management.path}?${serializeSelection({ section: "frontend" })}`,
+			selection: { section: "frontend" },
 		},
-		[mini, setExpanded, isOverSmViewport]
-	);
+		{ label: "Mapping", icon: <HubOutlined />, path: `${routes.dashboard.management.path}?${serializeSelection({ section: "mapping" })}`, selection: { section: "mapping" } },
+		{ label: "Backends", icon: <DnsOutlined />, path: `${routes.dashboard.management.path}?${serializeSelection({ section: "backend" })}`, selection: { section: "backend" } },
+		{
+			label: "ACL Library",
+			icon: <Inventory2Outlined />,
+			path: `${routes.dashboard.management.path}?${serializeSelection({ section: "acl" })}`,
+			selection: { section: "acl" },
+		},
+		{ label: "Quick Map", icon: <RocketLaunchOutlined />, path: `${routes.dashboard.management.path}?${serializeSelection({ section: "quickmap" })}`, selection: { section: "quickmap" } },
+		{ label: "Raw", icon: <DataObjectOutlined />, path: routes.raw.view.path, selection: { section: "raw" } },
+	];
 
-	const hasDrawerTransitions = isOverSmViewport && (!disableCollapsibleSidebar || isOverMdViewport);
+	const content = (
+		<Box
+			sx={{
+				height: "100%",
+				display: "flex",
+				flexDirection: "column",
+				backgroundColor: alpha(theme.palette.background.paper, theme.palette.mode === "dark" ? 0.88 : 0.72),
+				backdropFilter: "blur(20px)",
+			}}
+		>
+			<Box sx={{ px: expanded ? 2 : 1, py: 2.25 }}>
+				<Typography variant="subtitle2" color="text.secondary" sx={{ px: expanded ? 1 : 0, textAlign: expanded ? "left" : "center" }}>
+					{expanded ? "Dashboard" : "DB"}
+				</Typography>
+				<List dense disablePadding sx={{ mt: 1, display: "grid", gap: 0.5 }}>
+					{dashboardItems.map((item) => (
+						<ListItemButton
+							key={item.label}
+							selected={location.pathname === item.path && currentSelection.section === item.selection.section}
+							onClick={() => {
+								dispatch(setDashboardSelection(item.selection));
+								navigate(item.path);
+								if (!isDesktop) setExpanded(false);
+							}}
+							sx={{ justifyContent: expanded ? "flex-start" : "center" }}
+						>
+							<ListItemIcon sx={{ minWidth: expanded ? 36 : 0, color: "inherit" }}>{item.icon}</ListItemIcon>
+							{expanded ? <ListItemText primary={item.label} /> : null}
+						</ListItemButton>
+					))}
+				</List>
+			</Box>
 
-	const getDrawerContent = React.useCallback(
-		(viewport: "phone" | "tablet" | "desktop") => (
-			<>
-				<Toolbar />
+			<Divider />
+
+			<Box sx={{ flex: 1, minHeight: 0, px: expanded ? 2 : 1, py: 2, overflow: "auto" }}>
+				<Typography variant="subtitle2" color="text.secondary" sx={{ px: expanded ? 1 : 0, textAlign: expanded ? "left" : "center" }}>
+					{expanded ? "Modify" : "MD"}
+				</Typography>
+				<List dense disablePadding sx={{ mt: 1, display: "grid", gap: 0.5 }}>
+					{modifyItems.map((item) => (
+						<ListItemButton
+							key={item.label}
+							selected={
+								(location.pathname === routes.dashboard.management.path || location.pathname === routes.raw.view.path) &&
+								currentSelection.section === item.selection.section
+							}
+							onClick={() => {
+								dispatch(setDashboardSelection(item.selection));
+								navigate(item.path);
+								if (!isDesktop) setExpanded(false);
+							}}
+							sx={{ justifyContent: expanded ? "flex-start" : "center" }}
+						>
+							<ListItemIcon sx={{ minWidth: expanded ? 36 : 0, color: "inherit" }}>{item.icon}</ListItemIcon>
+							{expanded ? <ListItemText primary={item.label} /> : null}
+						</ListItemButton>
+					))}
+				</List>
+			</Box>
+
+			<Divider />
+			<Stack direction="row" spacing={1.25} alignItems="center" sx={{ px: expanded ? 2 : 1, py: 2 }}>
 				<Box
-					component="nav"
-					aria-label={`${viewport.charAt(0).toUpperCase()}${viewport.slice(1)}`}
 					sx={{
-						height: "100%",
-						display: "flex",
-						flexDirection: "column",
-						justifyContent: "space-between",
-						overflow: "auto",
-						scrollbarGutter: mini ? "stable" : "auto",
-						overflowX: "hidden",
-						pt: !mini ? 0 : 2,
-						...(hasDrawerTransitions ? getDrawerSxTransitionMixin(isFullyExpanded, "padding") : {}),
+						display: "grid",
+						placeItems: "center",
+						width: 42,
+						height: 42,
+						borderRadius: "50%",
+						backgroundColor: alpha(theme.palette.primary.main, 0.16),
+						color: theme.palette.text.primary,
+						fontWeight: 700,
 					}}
 				>
-					<List
-						dense
-						sx={{
-							padding: mini ? 0 : 0.5,
-							mb: 4,
-							width: mini ? MINI_DRAWER_WIDTH : "auto",
-						}}
-					>
-						<HeaderItemSidebarDashboard>Dashboard</HeaderItemSidebarDashboard>
-
-						<PageItemSidebarDashboard id="Summary" title="  Summary" icon={<BarChartIcon />} href="/" selected={pathname === "/"} />
-						<PageItemSidebarDashboard id="raw" title="Raw" icon={<LayersIcon />} href={routes.raw.view.path} selected={!!matchPath(routes.raw.view.path, pathname)} />
-
-						<DividerItemSidebarDashboard />
-
-						<HeaderItemSidebarDashboard>Modify</HeaderItemSidebarDashboard>
-
-						<PageItemSidebarDashboard
-							id="global"
-							title="Global"
-							icon={<LayersIcon />}
-							href={routes.global.edit.path}
-							selected={!!matchPath(routes.global.edit.path, pathname)}
-						/>
-						<PageItemSidebarDashboard
-							id="default"
-							title="Default"
-							icon={<LayersIcon />}
-							href={routes.default.edit.path}
-							selected={!!matchPath(routes.default.edit.path, pathname)}
-						/>
-						<PageItemSidebarDashboard
-							id="frontend"
-							title="Frontend"
-							icon={<Public />}
-							href="/frontend"
-							selected={!!matchPath("/frontend", pathname)}
-							defaultExpanded={!!matchPath("/frontend", pathname)}
-							expanded={expandfrontendemIds.includes("frontend")}
-							nestedNavigation={
-								<List
-									dense
-									sx={{
-										padding: 0,
-										my: 1,
-										pl: mini ? 0 : 1,
-										minWidth: 240,
-									}}
-								>
-									<PageItemSidebarDashboard
-										id="create"
-										title="Create"
-										href={routes.frontend.create.path}
-										selected={!!matchPath(routes.frontend.create.path, pathname)}
-									/>
-									<PageItemSidebarDashboard id="edit" title="Edit" href={routes.frontend.edit.path} selected={!!matchPath(routes.frontend.edit.path, pathname)} />
-								</List>
-							}
-						/>
-						<PageItemSidebarDashboard
-							id="backend"
-							title="Backend"
-							icon={<ConveyorBeltIcon />}
-							href="/backend"
-							selected={!!matchPath("/backend", pathname)}
-							defaultExpanded={!!matchPath("/backend", pathname)}
-							expanded={expandfrontendemIds.includes("backend")}
-							nestedNavigation={
-								<List
-									dense
-									sx={{
-										padding: 0,
-										my: 1,
-										pl: mini ? 0 : 1,
-										minWidth: 240,
-									}}
-								>
-									<PageItemSidebarDashboard
-										id="Backend"
-										title="Create"
-										href={routes.backend.create.path}
-										selected={!!matchPath(routes.backend.create.path, pathname)}
-									/>
-									<PageItemSidebarDashboard
-										id="Backend"
-										title="Edit"
-										href={routes.backend.edit.path}
-										selected={!!matchPath(routes.backend.edit.path, pathname)}
-									/>
-								</List>
-							}
-						/>
-					</List>
+					{String(user?.profile?.name ?? user?.profile?.preferred_username ?? "A")
+						.charAt(0)
+						.toUpperCase()}
 				</Box>
-			</>
-		),
-		[mini, hasDrawerTransitions, isFullyExpanded, expandfrontendemIds, pathname]
+				{expanded ? (
+					<Box sx={{ minWidth: 0 }}>
+						<Typography noWrap>{String(user?.profile?.name ?? user?.profile?.preferred_username ?? "Architect Elylan")}</Typography>
+						<Typography variant="body2" color="text.secondary" noWrap>
+							Cluster operator
+						</Typography>
+					</Box>
+				) : null}
+			</Stack>
+		</Box>
 	);
 
-	const getDrawerSharedSx = React.useCallback(
-		(isTemporary: boolean) => {
-			const drawerWidth = mini ? MINI_DRAWER_WIDTH : DRAWER_WIDTH;
-
-			return {
-				displayPrint: "none",
-				width: drawerWidth,
-				flexShrink: 0,
-				...getDrawerWidthTransitionMixin(expanded),
-				...(isTemporary ? { position: "absolute" } : {}),
-				[`& .MuiDrawer-paper`]: {
-					position: "absolute",
-					width: drawerWidth,
-					boxSizing: "border-box",
-					backgroundImage: "none",
-					...getDrawerWidthTransitionMixin(expanded),
-				},
-			};
-		},
-		[expanded, mini]
-	);
-
-	const sidebarContextValue = React.useMemo(() => {
-		return {
-			onPageItemClick: handlePageItemClick,
-			mini,
-			fullyExpanded: isFullyExpanded,
-			fullyCollapsed: isFullyCollapsed,
-			hasDrawerTransitions,
-		};
-	}, [handlePageItemClick, mini, isFullyExpanded, isFullyCollapsed, hasDrawerTransitions]);
-
-	return (
-		<DashboardSidebarContext.Provider value={sidebarContextValue}>
+	if (!isDesktop) {
+		return (
 			<Drawer
-				container={container}
 				variant="temporary"
 				open={expanded}
-				onClose={handleSetSidebarExpanded(false)}
-				ModalProps={{
-					keepMounted: true, // Better open performance on mobile.
-				}}
+				onClose={() => setExpanded(false)}
 				sx={{
-					display: {
-						xs: "block",
-						sm: disableCollapsibleSidebar ? "block" : "none",
-						md: "none",
+					display: { xs: "block", lg: "none" },
+					[`& .MuiDrawer-paper`]: {
+						width: DRAWER_WIDTH,
+						boxSizing: "border-box",
+						borderRight: `1px solid ${theme.palette.divider}`,
 					},
-					...getDrawerSharedSx(true),
 				}}
 			>
-				{getDrawerContent("phone")}
+				{content}
 			</Drawer>
-			<Drawer
-				variant="permanent"
-				sx={{
-					display: {
-						xs: "none",
-						sm: disableCollapsibleSidebar ? "none" : "block",
-						md: "none",
-					},
-					...getDrawerSharedSx(false),
-				}}
-			>
-				{getDrawerContent("tablet")}
-			</Drawer>
-			<Drawer
-				variant="permanent"
-				sx={{
-					display: { xs: "none", md: "block" },
-					...getDrawerSharedSx(false),
-				}}
-			>
-				{getDrawerContent("desktop")}
-			</Drawer>
-		</DashboardSidebarContext.Provider>
+		);
+	}
+
+	return (
+		<Box
+			sx={{
+				width,
+				flexShrink: 0,
+				borderRight: `1px solid ${theme.palette.divider}`,
+				transition: theme.transitions.create("width"),
+				display: { xs: "none", lg: "block" },
+			}}
+		>
+			{content}
+		</Box>
 	);
 }

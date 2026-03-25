@@ -81,6 +81,15 @@ public class WebApiIntegrationTests : IAsyncLifetime
 
 		var validateResponse = await client.PostAsJsonAsync("/haproxy/config/validate", snapshot);
 		validateResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+		var dashboardResponse = await client.GetAsync("/haproxy/dashboard");
+		dashboardResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+		var dashboard = await dashboardResponse.Content.ReadFromJsonAsync<DashboardSnapshot>();
+		dashboard.ShouldNotBeNull();
+		dashboard.Summary.RuntimeStatus.ShouldBe(RuntimeStatus.Up);
+		dashboard.Backends.Count.ShouldBe(1);
+		dashboard.Backends[0].HealthyServers.ShouldBe(1);
 	}
 
 	private static bool IsDockerUnavailable(Exception exception)
@@ -98,6 +107,40 @@ public class WebApiIntegrationTests : IAsyncLifetime
 		await AddJsonMapping("GET", "/v3/services/haproxy/configuration/version", new { version = 1L }, new Dictionary<string, string> { ["transaction_id"] = "tx-1" });
 		await AddJsonMapping("POST", "/v3/services/haproxy/transactions", new { id = "tx-1", version = 1L, status = "in_progress" }, new Dictionary<string, string> { ["version"] = "1" });
 		await AddJsonMapping("DELETE", "/v3/services/haproxy/transactions/tx-1", null, statusCode: 204);
+		await AddJsonMapping("GET", "/v3/health", new { haproxy = "up" });
+		await AddJsonMapping("GET", "/v3/services/haproxy/stats/native", new
+		{
+			stats = new object[]
+			{
+				new
+				{
+					backend_name = "be_main",
+					name = "be_main",
+					type = "backend",
+					stats = new
+					{
+						status = "UP",
+						scur = 2,
+						rate = 4,
+						bin = 128,
+						bout = 512,
+					},
+				},
+				new
+				{
+					backend_name = "be_main",
+					name = "app_1",
+					type = "server",
+					stats = new
+					{
+						status = "UP",
+						check_status = "L7OK",
+						scur = 2,
+						rate = 4,
+					},
+				},
+			},
+		});
 
 		var global = new { daemon = true };
 		var defaults = new[] { new { name = "defaults_main", mode = "http" } };
@@ -119,6 +162,18 @@ public class WebApiIntegrationTests : IAsyncLifetime
 			await AddJsonMapping("GET", "/v3/services/haproxy/configuration/frontends/fe_main/backend_switching_rules", rules, query);
 			await AddJsonMapping("GET", "/v3/services/haproxy/configuration/backends/be_main/servers", servers, query);
 		}
+
+		await AddJsonMapping("GET", "/v3/services/haproxy/runtime/backends/be_main/servers", new[]
+		{
+			new
+			{
+				name = "app_1",
+				address = "10.0.0.10",
+				port = 8080,
+				admin_state = "ready",
+				operational_state = "up",
+			},
+		});
 	}
 
 	private async Task AddJsonMapping(

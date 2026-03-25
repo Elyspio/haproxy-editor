@@ -1,9 +1,7 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo } from "react";
-import { userManager } from "@apis/oidc.client";
+import React, { createContext, useContext, useEffect, useMemo } from "react";
 import type { User } from "oidc-client-ts";
 import { useAppDispatch, useAppSelector } from "@store/utils/utils.selectors";
-import { setAuth } from "@modules/auth/auth.async.actions";
-import { navigateToRoute } from "@/config/view.config";
+import { loadAuthSession, startSignIn, startSignOut } from "@modules/auth/auth.async.actions";
 
 type AuthContextType = {
 	user: User | null;
@@ -18,27 +16,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 	const user = useAppSelector((x) => x.auth.user);
 
-	const setUser = useCallback(
-		(user: User | null) => {
-			console.log("set user", user);
-			dispatch(setAuth(user));
-			navigateToRoute.root();
-		},
-		[dispatch]
-	);
-
 	useEffect(() => {
-		userManager.getUser().then(setUser);
-		userManager.events.addUserLoaded(setUser);
-		userManager.events.addUserUnloaded(() => setUser(null));
-	}, [setUser]);
+		dispatch(loadAuthSession());
+	}, [dispatch]);
 
 	const authContextValue: AuthContextType = useMemo(() => {
-		const signIn = () => userManager.signinRedirect();
-		const signOut = () => userManager.signoutRedirect();
+		const signIn = () => void dispatch(startSignIn());
+		const signOut = () => void dispatch(startSignOut());
 
 		return { user, signIn, signOut };
-	}, [user]);
+	}, [dispatch, user]);
 
 	return <AuthContext.Provider value={authContextValue}>{children}</AuthContext.Provider>;
 };

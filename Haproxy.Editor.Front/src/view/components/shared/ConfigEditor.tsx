@@ -1,5 +1,6 @@
 import Editor, { type Monaco } from "@monaco-editor/react";
 import { editor, Position } from "monaco-editor";
+import { useTheme } from "@mui/material/styles";
 
 function registerHaproxyLanguage(monaco: Monaco) {
 	monaco.languages.register({ id: "haproxy" });
@@ -76,9 +77,11 @@ type ConfigEditorProps = {
 } & ({ disabled: true } | { disabled?: false; onChange: (value: string | undefined, ev: editor.IModelContentChangedEvent) => void });
 
 export function ConfigEditor(props: ConfigEditorProps) {
+	const theme = useTheme();
+
 	return (
 		<Editor
-			theme={props.language === "json" ? "vs" : "haproxyTheme"}
+			theme={props.language === "json" ? (theme.palette.mode === "dark" ? "vs-dark" : "vs") : "haproxyTheme"}
 			language={props.language ?? "haproxy"}
 			height={props.height ?? "100%"}
 			value={props.content}

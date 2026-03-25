@@ -1,6 +1,10 @@
 import { Log, UserManager, type UserManagerSettings, WebStorageStateStore } from "oidc-client-ts";
 
-const oauth = window["haproxy-editor"].config.oauth;
+const oauth = window["haproxy-editor"]?.config?.oauth ?? {
+	authority: "https://oidc.invalid",
+	clientId: "haproxy-editor-test",
+	callbackUrl: "http://localhost/oauth/callback",
+};
 const oidcConfig: UserManagerSettings = {
 	authority: oauth.authority,
 	client_id: oauth.clientId,

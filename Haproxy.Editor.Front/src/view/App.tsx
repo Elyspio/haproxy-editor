@@ -1,21 +1,19 @@
-import { createBrowserRouter, createRoutesFromChildren, Route, RouterProvider } from "react-router-dom";
+import { createRoutesFromChildren, Navigate, Route, RouterProvider, createBrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/view/context/auth.context";
 import { ProtectedRoute } from "@components/auth/ProtectedRoute";
 import { AuthCallback } from "@pages/AuthCallback";
 import { routes } from "@/config/view.config";
 import { DashboardLayout } from "@pages/DashboardLayout";
 import { createStore } from "@store/store.shared";
-import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
+import { CssBaseline, ThemeProvider } from "@mui/material";
 import { Provider } from "react-redux";
-import { FrontendCreate } from "@components/frontend/Frontend.Create";
-import { GlobalEdit } from "@components/Global.Edit";
-import { DefaultEdit } from "@components/Default.Edit";
 import { ToastContainer } from "react-toastify";
-import { RawView } from "@components/Raw.View";
 import { Summary } from "@components/summary/Summary";
-import { FrontendEdit } from "@components/frontend/Frontend.Edit";
-import { BackendCreate } from "@components/backend/Backend.Create";
-import { BackendEdit } from "@components/backend/Backend.Edit";
+import { FlowDashboard } from "@components/summary/Flow.Dashboard";
+import { RawView } from "@components/Raw.View";
+import { ManagementWorkspace } from "@components/Management.Workspace";
+import { createCockpitTheme } from "./theme/cockpit.theme";
+import { useAppSelector } from "@store/utils/utils.selectors";
 
 const router = createBrowserRouter(
 	createRoutesFromChildren(
@@ -29,71 +27,16 @@ const router = createBrowserRouter(
 					</ProtectedRoute>
 				}
 			>
-				<Route
-					index
-					element={
-						<ProtectedRoute>
-							<Summary />
-						</ProtectedRoute>
-					}
-				/>
-
-				<Route
-					path={routes.frontend.create.path}
-					element={
-						<ProtectedRoute>
-							<FrontendCreate />
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path={routes.frontend.edit.path}
-					element={
-						<ProtectedRoute>
-							<FrontendEdit />
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path={routes.backend.create.path}
-					element={
-						<ProtectedRoute>
-							<BackendCreate />
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path={routes.backend.edit.path}
-					element={
-						<ProtectedRoute>
-							<BackendEdit />
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path={routes.global.edit.path}
-					element={
-						<ProtectedRoute>
-							<GlobalEdit />
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path={routes.default.edit.path}
-					element={
-						<ProtectedRoute>
-							<DefaultEdit />
-						</ProtectedRoute>
-					}
-				/>
-				<Route
-					path={routes.raw.view.path}
-					element={
-						<ProtectedRoute>
-							<RawView />
-						</ProtectedRoute>
-					}
-				/>
+				<Route index element={<Summary />} />
+				<Route path={routes.dashboard.flow.path.slice(1)} element={<FlowDashboard />} />
+				<Route path={routes.dashboard.management.path.slice(1)} element={<ManagementWorkspace />} />
+				<Route path={routes.raw.view.path.slice(1)} element={<RawView />} />
+				<Route path={routes.frontend.create.path} element={<Navigate replace to={`${routes.dashboard.management.path}?section=frontend`} />} />
+				<Route path={routes.frontend.edit.path} element={<Navigate replace to={`${routes.dashboard.management.path}?section=frontend`} />} />
+				<Route path={routes.backend.create.path} element={<Navigate replace to={`${routes.dashboard.management.path}?section=backend`} />} />
+				<Route path={routes.backend.edit.path} element={<Navigate replace to={`${routes.dashboard.management.path}?section=backend`} />} />
+				<Route path={routes.global.edit.path} element={<Navigate replace to={`${routes.dashboard.management.path}?section=global`} />} />
+				<Route path={routes.default.edit.path} element={<Navigate replace to={`${routes.dashboard.management.path}?section=global`} />} />
 			</Route>
 		</>
 	)
@@ -103,18 +46,25 @@ window["haproxy-editor"].router = router;
 
 const store = createStore();
 
-const theme = createTheme();
+function AppShell() {
+	const themeMode = useAppSelector((state) => state.dashboard.themeMode);
+	const theme = createCockpitTheme(themeMode);
+
+	return (
+		<ThemeProvider theme={theme}>
+			<CssBaseline />
+			<AuthProvider>
+				<RouterProvider router={router} />
+				<ToastContainer theme={themeMode} />
+			</AuthProvider>
+		</ThemeProvider>
+	);
+}
 
 export const App = () => {
 	return (
-		<ThemeProvider theme={theme}>
-			<Provider store={store}>
-				<AuthProvider>
-					<RouterProvider router={router} />
-					<ToastContainer />
-				</AuthProvider>
-			</Provider>
-			<CssBaseline />
-		</ThemeProvider>
+		<Provider store={store}>
+			<AppShell />
+		</Provider>
 	);
 };

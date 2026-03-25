@@ -3,6 +3,7 @@ import { ConfigService } from "@services/config.service";
 import { toast } from "react-toastify";
 import { InvalidConfiguration } from "@components/toasts/InvalidConfiguration";
 import React from "react";
+import { loadDashboard } from "@modules/dashboard/dashboard.async.actions";
 
 const createAsyncThunk = createAsyncActionGenerator("config");
 
@@ -25,6 +26,7 @@ export const syncConfig = createAsyncThunk("sync", async (_, { extra, getState, 
 	}
 
 	await configService.updateConfig(getState().config.current);
+	dispatch(loadDashboard());
 	return getState().config.current;
 });
 

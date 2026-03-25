@@ -20,6 +20,12 @@ public interface IHaproxyService
 	public Task SaveConfig(HaproxyResourceSnapshot config);
 
 	/// <summary>
+	///     Retrieves an operational dashboard snapshot combining config and runtime data.
+	/// </summary>
+	/// <returns>The current <see cref="DashboardSnapshot" />.</returns>
+	public Task<DashboardSnapshot> GetDashboardSnapshot();
+
+	/// <summary>
 	///     Validates the provided HAProxy configuration object.
 	/// </summary>
 	/// <param name="config">The configuration object to validate.</param>

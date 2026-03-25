@@ -1,26 +1,23 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { userManager } from "@apis/oidc.client";
-import { navigateToRoute } from "@/config/view.config";
-import { useAuth } from "@/view/context/auth.context";
-import { isValidJwt } from "@/core/helpers/jwt.helpers";
+import { routes } from "@/config/view.config";
+import { completeAuthCallback } from "@modules/auth/auth.async.actions";
+import { useAppDispatch, useAppSelector } from "@store/utils/utils.selectors";
 
 export const AuthCallback = () => {
 	const navigate = useNavigate();
-
-	const auth = useAuth();
-
-	useEffect(() => {
-		(async () => {
-			await userManager.signinCallback();
-		})();
-	}, [navigate]);
+	const dispatch = useAppDispatch();
+	const user = useAppSelector((state) => state.auth.user);
 
 	useEffect(() => {
-		if (auth.user && isValidJwt(auth.user.access_token)) {
-			navigateToRoute.root();
+		void dispatch(completeAuthCallback());
+	}, [dispatch]);
+
+	useEffect(() => {
+		if (user) {
+			navigate(routes.dashboard.summary.path, { replace: true });
 		}
-	}, [auth.user]);
+	}, [navigate, user]);
 
-	return <div>Authentification...</div>;
+	return <div>Authenticating...</div>;
 };

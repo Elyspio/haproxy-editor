@@ -11,6 +11,7 @@ public static class HaproxyEndpoints
 
 
 		grp.MapGet("/config", GetConfig).WithName("GetHaproxyConfig");
+		grp.MapGet("/dashboard", GetDashboard).WithName("GetHaproxyDashboard");
 		grp.MapPut("/config", SetConfig).WithName("SaveHaproxyConfig");
 		grp.MapPost("/config/validate", ValidateConfig).WithName("ValidateHaproxyConfig");
 
@@ -20,6 +21,11 @@ public static class HaproxyEndpoints
 	private static Task<HaproxyResourceSnapshot> GetConfig(IHaproxyService haproxyService)
 	{
 		return haproxyService.GetConfig();
+	}
+
+	private static Task<DashboardSnapshot> GetDashboard(IHaproxyService haproxyService)
+	{
+		return haproxyService.GetDashboardSnapshot();
 	}
 
 	private static Task SetConfig(HaproxyResourceSnapshot config, IHaproxyService haproxyService)
