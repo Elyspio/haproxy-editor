@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>Haproxy.Editor</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.5" />
+		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.5" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.5" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Haproxy.Editor.Abstractions\Haproxy.Editor.Abstractions.csproj"/>
+		<ProjectReference Include="..\Haproxy.Editor.Adapters.Haproxy\Haproxy.Editor.Adapters.Haproxy.csproj"/>
+		<ProjectReference Include="..\Haproxy.Editor.Core\Haproxy.Editor.Core.csproj"/>
+	</ItemGroup>
+
+</Project>

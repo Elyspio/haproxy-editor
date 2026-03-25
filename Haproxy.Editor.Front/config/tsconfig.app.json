@@ -1,0 +1,12 @@
+{
+	"extends": ["@elyspio/vite-eslint-config/tsconfig.json"],
+	"compilerOptions": {
+		"tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+		"resolveJsonModule": true,
+		"noEmit": true,
+		"baseUrl": "../",
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true
+	},
+	"include": ["../src", "../tests"]
+}

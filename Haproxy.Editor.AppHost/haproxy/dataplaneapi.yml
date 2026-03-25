@@ -1,0 +1,21 @@
+config_version: 2
+name: haproxy-editor-local
+dataplaneapi:
+  host: 0.0.0.0
+  port: 5555
+  advertised:
+    api_address: ""
+    api_port: 0
+  scheme:
+  - http
+  userlist:
+    userlist: dataplaneapi
+    userlist_file: ""
+haproxy:
+  config_file: /usr/local/etc/haproxy/haproxy.cfg
+  haproxy_bin: /usr/local/sbin/haproxy
+  reload:
+    reload_delay: 5
+    reload_strategy: s6
+log_targets:
+- log_to: stdout

@@ -1,0 +1,18 @@
+<svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-xn1u8r-MuiSvgIcon-root"
+     focusable="false"
+     aria-hidden="true"
+     height="56"
+     width="80"
+     fill="none"
+     xmlns="http://www.w3.org/2000/svg">
+	<circle cx="24" cy="28" r="5" fill="#2581eb"/>
+	<circle cx="42" cy="16" r="3" fill="#2581eb"/>
+	<circle cx="42" cy="40" r="3" fill="#2581eb"/>
+	<line x1="28" y1="27" x2="39" y2="18.5" stroke="#2563eb" stroke-width="2"/>
+	<line x1="28" y1="29" x2="39" y2="37.5" stroke="#2563eb" stroke-width="2"/>
+	<text x="50" y="38" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="600" fill="#1a1a1a">
+		<tspan font-family="Montserrat, Segoe UI, Arial, sans-serif"
+		       font-weight="700" fill="#2581eb">H
+		</tspan>
+	</text>
+</svg>
