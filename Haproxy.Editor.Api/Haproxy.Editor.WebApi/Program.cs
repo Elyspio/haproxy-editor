@@ -8,24 +8,45 @@ using Haproxy.Editor.Endpoints;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
+
+static object? CreateConfigurationSnapshot(IConfigurationSection section)
+{
+	var children = section.GetChildren().ToArray();
+
+	if (children.Length == 0)
+	{
+		return section.Value;
+	}
+
+	if (children.All(child => int.TryParse(child.Key, out _)))
+	{
+		return children
+			.OrderBy(child => int.Parse(child.Key, System.Globalization.CultureInfo.InvariantCulture))
+			.Select(CreateConfigurationSnapshot)
+			.ToArray();
+	}
+
+	return children.ToDictionary(
+		child => child.Key,
+		child => CreateConfigurationSnapshot(child));
+}
 
 IdentityModelEventSource.ShowPII = true;
 
 builder.Logging.AddSimpleConsole(x => x.SingleLine = true).SetMinimumLevel(LogLevel.Debug);
+
+builder.Configuration.AddJsonFile("appsettings.dockerhost.json", optional: true, reloadOnChange: true);
 
 builder.Services.AddLogging(x =>
 {
 	x.AddOpenTelemetry();
 });
 
-
-
-
 builder.AddModule<CoreModule>();
 builder.AddModule<HaproxyAdapterModule>();
-
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -34,7 +55,6 @@ builder.Services.AddSwaggerGen(options =>
 {
 	options.NonNullableReferenceTypesAsRequired();
 	options.SupportNonNullableReferenceTypes();
-
 
 	options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
 	{
@@ -45,11 +65,12 @@ builder.Services.AddSwaggerGen(options =>
 		In = ParameterLocation.Header,
 		Description = "Enter your token."
 	});
+
 	options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
 	{
 		{
 			new OpenApiSecuritySchemeReference("Bearer", hostDocument: document, externalResource: null),
-			new List<string>()
+			[]
 		}
 	});
 });
@@ -84,17 +105,22 @@ builder.Services.AddCors(options =>
 	});
 });
 
-
-var otelOptions = builder.Configuration.GetSection("OpenTelemetry").Get<AppOpenTelemetryBuilderOptions>();
+var otelSection = builder.Configuration.GetSection("OpenTelemetry");
+var otelOptions = otelSection.Get<AppOpenTelemetryBuilderOptions>();
 
 if (otelOptions == null)
 {
 	throw new InvalidOperationException("OpenTelemetry options not found");
 }
 
+var otelOptionsSnapshot = CreateConfigurationSnapshot(otelSection);
+
+System.Console.WriteLine($"OpenTelemetry options: {System.Environment.NewLine}{JsonConvert.SerializeObject(otelOptionsSnapshot, Formatting.Indented)}");
+
 var otelBuilder = new AppOpenTelemetryBuilder<Program>(otelOptions!, builder.Configuration);
 
 otelBuilder.AddAssembly<CoreModule>();
+
 otelBuilder.AddAssembly<HaproxyAdapterModule>();
 
 otelBuilder.Build(builder.Services);
@@ -115,6 +141,8 @@ app.UseAuthorization();
 
 
 app.UseHttpsRedirection();
+
+app.MapGet("/health", () => Results.Ok("healthy"));
 
 app.MapHaproxyEndpoints();
 

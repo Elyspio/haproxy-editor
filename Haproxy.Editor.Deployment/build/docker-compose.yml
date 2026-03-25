@@ -1,0 +1,19 @@
+services:
+    front:
+        image: elyspio/haproxy-editor:${DOCKER_TAG}-front
+        build:
+            context: ../..
+            dockerfile: Haproxy.Editor.Deployment/build/dockerfiles/front.dockerfile
+
+    api:
+        image: elyspio/haproxy-editor:${DOCKER_TAG}-api
+        build:
+            context: ../..
+            dockerfile: Haproxy.Editor.Deployment/build/dockerfiles/api.dockerfile
+            args:
+                SLN_PATH: Haproxy.Editor.slnx
+                MAIN_CSPROJ_PATH: Haproxy.Editor.WebApi/Haproxy.Editor.WebApi.csproj
+                ROOT_FOLDER: Haproxy.Editor.Api
+                ENTRY_DLL: Haproxy.Editor.WebApi.dll
+                PAT: ${GITHUB_TOKEN}
+

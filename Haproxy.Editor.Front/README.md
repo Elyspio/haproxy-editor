@@ -1,70 +1,134 @@
-# React + TypeScript + Vite
+# Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This folder contains the frontend application for HAProxy Editor.
 
-Currently, two official plugins are available:
+The frontend provides the user interface for browsing, validating, and editing HAProxy resources such as:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- globals and defaults
+- frontends
+- backends
+- ACLs
+- routing rules
+- dashboard summaries
 
-## Expanding the ESLint configuration
+## Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- React
+- TypeScript
+- Vite
+- Redux Toolkit
+- Inversify
+- MUI / MUI X
+- Vitest
 
-```js
-export default tseslint.config([
-	globalIgnores(["dist"]),
-	{
-		files: ["**/*.{ts,tsx}"],
-		extends: [
-			// Other configs...
+## Project structure
 
-			// Remove tseslint.configs.recommended and replace with this
-			...tseslint.configs.recommendedTypeChecked,
-			// Alternatively, use this for stricter rules
-			...tseslint.configs.strictTypeChecked,
-			// Optionally, add this for stylistic rules
-			...tseslint.configs.stylisticTypeChecked,
-
-			// Other configs...
-		],
-		languageOptions: {
-			parserOptions: {
-				project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-				tsconfigRootDir: import.meta.dirname,
-			},
-			// other options...
-		},
-	},
-]);
+```text
+Haproxy.Editor.Front/
+├─ src/
+│  ├─ core/      # APIs, DI, services
+│  ├─ store/     # Redux store, modules, async helpers
+│  ├─ types/     # Shared frontend-only types
+│  └─ view/      # Pages, components, theme, UI logic
+├─ public/       # Static assets and runtime config
+├─ scripts/      # Utility scripts such as API refresh
+├─ tests/        # Frontend tests
+└─ package.json
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x)
-and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## How the frontend works
 
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x";
-import reactDom from "eslint-plugin-react-dom";
+### Routing
 
-export default tseslint.config([
-	globalIgnores(["dist"]),
-	{
-		files: ["**/*.{ts,tsx}"],
-		extends: [
-			// Other configs...
-			// Enable lint rules for React
-			reactX.configs["recommended-typescript"],
-			// Enable lint rules for React DOM
-			reactDom.configs.recommended,
-		],
-		languageOptions: {
-			parserOptions: {
-				project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-				tsconfigRootDir: import.meta.dirname,
-			},
-			// other options...
-		},
-	},
-]);
+Routing is assembled from the frontend view configuration and React Router.
+
+### State management
+
+State is organized by module, mainly under:
+
+- `auth`
+- `config`
+- `dashboard`
+
+Async behavior is implemented through shared thunk helpers rather than raw `createAsyncThunk` usage scattered across the codebase.
+
+### Dependency injection
+
+API-facing services are resolved through the Inversify container.
+
+Bindings are assembled under `src/core/di`.
+
+### Runtime configuration
+
+Runtime frontend settings are read from:
+
+```text
+window["haproxy-editor"]
+```
+
+This is used for values such as API endpoints.
+
+## Commands
+
+From this folder:
+
+### Install dependencies
+
+```powershell
+pnpm install
+```
+
+### Development / build
+
+```powershell
+pnpm build
+pnpm lint
+pnpm test -- --run
+```
+
+### Run one test file
+
+```powershell
+pnpm test -- --run tests/units/config.reducer.test.ts
+```
+
+### Refresh generated API client
+
+```powershell
+pnpm refresh:api
+```
+
+Before refreshing the generated API client, rebuild or restart the backend so the Swagger document reflects the current API surface.
+
+## Important notes
+
+### Generated files
+
+Do **not** hand-edit:
+
+- `src/core/apis/generated/*`
+
+### API proxy behavior
+
+The Vite dev setup proxies `/api` to the local backend and strips the `/api` prefix.
+
+### UI organization
+
+Most UI code lives under `src/view`, including:
+
+- management panels
+- dashboard components
+- summary visualizations
+- shared editors and toolbars
+
+## Testing
+
+Frontend tests are written with Vitest.
+
+Typical commands:
+
+```powershell
+pnpm test -- --run
+pnpm build
+pnpm lint
 ```

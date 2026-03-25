@@ -1,21 +1,6 @@
 import { alpha, useTheme } from "@mui/material/styles";
-import {
-	AppBar,
-	Avatar,
-	Badge,
-	Box,
-	IconButton,
-	InputAdornment,
-	List,
-	ListItemButton,
-	ListItemText,
-	Paper,
-	Stack,
-	TextField,
-	Toolbar,
-	Typography,
-} from "@mui/material";
-import { DarkModeOutlined, LightModeOutlined, Menu, NotificationsNoneOutlined, Search, ViewSidebarOutlined } from "@mui/icons-material";
+import { AppBar, Avatar, Box, IconButton, InputAdornment, List, ListItemButton, ListItemText, Paper, Stack, TextField, Toolbar, Typography } from "@mui/material";
+import { DarkModeOutlined, LightModeOutlined, Menu, Search, ViewSidebarOutlined } from "@mui/icons-material";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ReactNode, startTransition, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/view/context/auth.context";
@@ -69,9 +54,7 @@ export function DashboardHeader({ logo, menuOpen, onToggleMenu }: DashboardHeade
 					<Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
 						<Stack direction="row" alignItems="center" spacing={1}>
 							{logo}
-							<Typography variant="subtitle1" sx={{ fontSize: 28, fontWeight: 700, lineHeight: 1 }}>
-								Haproxy
-							</Typography>
+						
 						</Stack>
 					</Link>
 				</Stack>
@@ -123,15 +106,11 @@ export function DashboardHeader({ logo, menuOpen, onToggleMenu }: DashboardHeade
 					) : null}
 				</Box>
 
-				<Stack direction="row" alignItems="center" spacing={1}>
+				<Stack direction="row" alignItems="center" spacing={1} ml={"auto"}>
 					<IconButton color="inherit" onClick={() => dispatch(saveThemePreference(themeMode === "dark" ? "light" : "dark"))}>
 						{themeMode === "dark" ? <LightModeOutlined /> : <DarkModeOutlined />}
 					</IconButton>
-					<IconButton color="inherit">
-						<Badge color="error" variant="dot">
-							<NotificationsNoneOutlined />
-						</Badge>
-					</IconButton>
+
 					<Stack direction="row" alignItems="center" spacing={1.25} sx={{ pl: 1 }}>
 						<Avatar sx={{ bgcolor: alpha(theme.palette.primary.main, 0.2), color: theme.palette.text.primary }}>
 							{displayName.charAt(0).toUpperCase()}
