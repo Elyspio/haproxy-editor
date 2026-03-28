@@ -1,5 +1,5 @@
 import { Add, DeleteOutline, LanOutlined } from "@mui/icons-material";
-import { Box, Button, Divider, List, ListItemButton, ListItemText, MenuItem, Paper, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, Chip, Divider, MenuItem, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import type { HaproxyFrontendResource, HaproxyResourceSnapshot } from "@modules/config/config.types";
 import type { DashboardSelection } from "@modules/dashboard/dashboard.types";
@@ -72,99 +72,111 @@ export function FrontendManagementSection({
 				</Stack>
 			}
 		>
-			<Box sx={{ height: "100%", minHeight: 0, display: "grid", gridTemplateRows: "auto 1fr", overflow: "hidden" }}>
-				<Box sx={{ p: 1.5, borderBottom: `1px solid ${theme.palette.divider}` }}>
-					<List disablePadding sx={{ display: "grid", gap: 1 }}>
-						{snapshot.frontends.map((frontend) => (
-							<ListItemButton
-								key={frontend.name}
-								selected={frontendContext?.name === frontend.name}
-								onClick={() => setSelection({ section: "frontend", frontendName: frontend.name })}
-								sx={{ border: `1px solid ${alpha(theme.palette.primary.main, frontendContext?.name === frontend.name ? 0.35 : 0.12)}` }}
-							>
-								<ListItemText primary={frontend.name} secondary={`${frontend.mode ?? "tcp"} ${frontend.binds.length} binds`} />
-							</ListItemButton>
-						))}
-					</List>
-				</Box>
+			<Box sx={{ height: "100%", minHeight: 0, overflow: "auto", p: 2 }}>
+				<Stack spacing={3}>
+					<Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }} useFlexGap>
+						{snapshot.frontends.map((frontend) => {
+							const isSelected = frontendContext?.name === frontend.name;
+							return (
+								<Chip
+									key={frontend.name}
+									label={`${frontend.name} (${frontend.mode ?? "tcp"}, ${frontend.binds.length} bind${frontend.binds.length !== 1 ? "s" : ""})`}
+									variant={isSelected ? "filled" : "outlined"}
+									color={isSelected ? "primary" : "default"}
+									onClick={() => setSelection({ section: "frontend", frontendName: frontend.name })}
+									sx={{
+										borderRadius: 2,
+										transition: theme.transitions.create(["background-color", "border-color", "box-shadow"]),
+										...(isSelected && {
+											boxShadow: `0 0 0 1px ${alpha(theme.palette.primary.main, 0.3)}`,
+										}),
+									}}
+								/>
+							);
+						})}
+					</Stack>
 
-				<Box sx={{ p: 2, overflow: "auto" }}>
 					{frontendContext ? (
-						<Stack spacing={2}>
-							<TextField
-								size="small"
-								label="Name"
-								value={frontendContext.name}
-								onChange={(event) => {
-									const nextName = event.target.value;
-									updateSnapshot((draft) => {
-										const frontend = draft.frontends.find((item) => item.name === frontendContext.name);
-										if (frontend) {
-											frontend.name = nextName;
-										}
-									});
-									setSelection({ section: "frontend", frontendName: nextName });
-								}}
-							/>
-							<TextField
-								size="small"
-								select
-								label="Mode"
-								value={frontendContext.mode ?? ""}
-								onChange={(event) =>
-									updateSnapshot((draft) => {
-										const frontend = draft.frontends.find((item) => item.name === frontendContext.name);
-										if (frontend) frontend.mode = event.target.value || null;
-									})
-								}
-							>
-								<MenuItem value="http">HTTP</MenuItem>
-								<MenuItem value="tcp">TCP</MenuItem>
-							</TextField>
+						<Stack spacing={2.5}>
+							<Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+								<TextField
+									size="small"
+									label="Name"
+									fullWidth
+									value={frontendContext.name}
+									onChange={(event) => {
+										const nextName = event.target.value;
+										updateSnapshot((draft) => {
+											const frontend = draft.frontends.find((item) => item.name === frontendContext.name);
+											if (frontend) {
+												frontend.name = nextName;
+											}
+										});
+										setSelection({ section: "frontend", frontendName: nextName });
+									}}
+								/>
+								<TextField
+									size="small"
+									select
+									label="Mode"
+									sx={{ minWidth: 140 }}
+									value={frontendContext.mode ?? ""}
+									onChange={(event) =>
+										updateSnapshot((draft) => {
+											const frontend = draft.frontends.find((item) => item.name === frontendContext.name);
+											if (frontend) frontend.mode = event.target.value || null;
+										})
+									}
+								>
+									<MenuItem value="http">HTTP</MenuItem>
+									<MenuItem value="tcp">TCP</MenuItem>
+								</TextField>
+							</Stack>
 
 							<Divider />
-							<SectionHeader title="Links" />
-							<Stack spacing={1}>
-								<Paper sx={{ p: 1.5, backgroundColor: alpha(theme.palette.background.default, 0.22) }}>
-									<Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
-										<Box>
-											<Typography variant="body1">ACL Library</Typography>
-											<Typography variant="body2" color="text.secondary">
-												{frontendContext.acls.length} ACLs attached to this frontend
-											</Typography>
-										</Box>
-										<Button size="small" variant="outlined" onClick={() => setSelection({ section: "acl", frontendName: frontendContext.name })}>
-											Open ACLs
-										</Button>
-									</Stack>
-								</Paper>
-								<Paper sx={{ p: 1.5, backgroundColor: alpha(theme.palette.background.default, 0.22) }}>
-									<Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
-										<Box>
-											<Typography variant="body1">Mapping</Typography>
-											<Typography variant="body2" color="text.secondary">
-												{frontendContext.backendSwitchingRules.length} routing rules and {frontendRelatedBackendNames.size} linked backends
-											</Typography>
-										</Box>
-										<Button size="small" variant="outlined" onClick={() => setSelection({ section: "mapping", frontendName: frontendContext.name })}>
-											Open Mapping
-										</Button>
-									</Stack>
-								</Paper>
-								<Paper sx={{ p: 1.5, backgroundColor: alpha(theme.palette.background.default, 0.22) }}>
-									<Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
-										<Box>
-											<Typography variant="body1">Linked Backends</Typography>
-											<Typography variant="body2" color="text.secondary">
-												Only related backends are shown when you navigate from this frontend
-											</Typography>
-										</Box>
-										<Button size="small" variant="outlined" onClick={() => setSelection({ section: "backend", frontendName: frontendContext.name })}>
-											Open Backends
-										</Button>
-									</Stack>
-								</Paper>
-							</Stack>
+							<Box>
+								<Typography variant="subtitle2" sx={{ mb: 1.5 }}>
+									Links
+								</Typography>
+								<Stack direction="row" spacing={1.5} sx={{ flexWrap: "wrap" }} useFlexGap>
+									<Tooltip title={`${frontendContext.acls.length} ACLs attached to this frontend`} arrow>
+										<Chip
+											label={`ACLs (${frontendContext.acls.length})`}
+											variant="outlined"
+											clickable
+											onClick={() => setSelection({ section: "acl", frontendName: frontendContext.name })}
+											sx={{
+												borderColor: alpha(theme.palette.primary.main, 0.28),
+												"&:hover": { backgroundColor: alpha(theme.palette.primary.main, 0.08) },
+											}}
+										/>
+									</Tooltip>
+									<Tooltip title={`${frontendContext.backendSwitchingRules.length} routing rules and ${frontendRelatedBackendNames.size} linked backends`} arrow>
+										<Chip
+											label={`Mapping (${frontendContext.backendSwitchingRules.length} rules)`}
+											variant="outlined"
+											clickable
+											onClick={() => setSelection({ section: "mapping", frontendName: frontendContext.name })}
+											sx={{
+												borderColor: alpha(theme.palette.primary.main, 0.28),
+												"&:hover": { backgroundColor: alpha(theme.palette.primary.main, 0.08) },
+											}}
+										/>
+									</Tooltip>
+									<Tooltip title="Only related backends are shown when you navigate from this frontend" arrow>
+										<Chip
+											label={`Backends (${frontendRelatedBackendNames.size})`}
+											variant="outlined"
+											clickable
+											onClick={() => setSelection({ section: "backend", frontendName: frontendContext.name })}
+											sx={{
+												borderColor: alpha(theme.palette.primary.main, 0.28),
+												"&:hover": { backgroundColor: alpha(theme.palette.primary.main, 0.08) },
+											}}
+										/>
+									</Tooltip>
+								</Stack>
+							</Box>
 
 							<Divider />
 							<SectionHeader
@@ -188,55 +200,53 @@ export function FrontendManagementSection({
 									</Button>
 								}
 							/>
-							<Stack spacing={1.25}>
+							<Stack spacing={0} divider={<Divider sx={{ opacity: 0.4 }} />}>
 								{frontendContext.binds.map((bind, index) => (
-									<Paper key={bind.name || index} sx={{ p: 1.5, backgroundColor: alpha(theme.palette.background.default, 0.24) }}>
-										<Stack direction={{ xs: "column", md: "row" }} spacing={1.25}>
-											<TextField
-												size="small"
-												label="Name"
-												fullWidth
-												value={bind.name}
-												onChange={(event) =>
-													updateSnapshot((draft) => {
-														const item = draft.frontends.find((frontend) => frontend.name === frontendContext.name)?.binds[index];
-														if (item) item.name = event.target.value;
-													})
-												}
-											/>
-											<TextField
-												size="small"
-												label="Address"
-												fullWidth
-												value={bind.address ?? ""}
-												onChange={(event) =>
-													updateSnapshot((draft) => {
-														const item = draft.frontends.find((frontend) => frontend.name === frontendContext.name)?.binds[index];
-														if (item) item.address = event.target.value || null;
-													})
-												}
-											/>
-											<TextField
-												size="small"
-												label="Port"
-												type="number"
-												value={bind.port ?? ""}
-												onChange={(event) =>
-													updateSnapshot((draft) => {
-														const item = draft.frontends.find((frontend) => frontend.name === frontendContext.name)?.binds[index];
-														if (item) item.port = event.target.value === "" ? null : Number(event.target.value);
-													})
-												}
-											/>
-										</Stack>
-									</Paper>
+									<Stack key={bind.name || index} direction={{ xs: "column", md: "row" }} spacing={1.25} sx={{ py: 1.5 }}>
+										<TextField
+											size="small"
+											label="Name"
+											fullWidth
+											value={bind.name}
+											onChange={(event) =>
+												updateSnapshot((draft) => {
+													const item = draft.frontends.find((frontend) => frontend.name === frontendContext.name)?.binds[index];
+													if (item) item.name = event.target.value;
+												})
+											}
+										/>
+										<TextField
+											size="small"
+											label="Address"
+											fullWidth
+											value={bind.address ?? ""}
+											onChange={(event) =>
+												updateSnapshot((draft) => {
+													const item = draft.frontends.find((frontend) => frontend.name === frontendContext.name)?.binds[index];
+													if (item) item.address = event.target.value || null;
+												})
+											}
+										/>
+										<TextField
+											size="small"
+											label="Port"
+											type="number"
+											value={bind.port ?? ""}
+											onChange={(event) =>
+												updateSnapshot((draft) => {
+													const item = draft.frontends.find((frontend) => frontend.name === frontendContext.name)?.binds[index];
+													if (item) item.port = event.target.value === "" ? null : Number(event.target.value);
+												})
+											}
+										/>
+									</Stack>
 								))}
 							</Stack>
 						</Stack>
 					) : (
 						<Typography color="text.secondary">No frontend selected.</Typography>
 					)}
-				</Box>
+				</Stack>
 			</Box>
 		</Panel>
 	);

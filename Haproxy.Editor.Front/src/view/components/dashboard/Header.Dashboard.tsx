@@ -1,6 +1,6 @@
 import { alpha, useTheme } from "@mui/material/styles";
-import { AppBar, Avatar, Box, IconButton, InputAdornment, List, ListItemButton, ListItemText, Paper, Stack, TextField, Toolbar, Typography } from "@mui/material";
-import { DarkModeOutlined, LightModeOutlined, Menu, Search, ViewSidebarOutlined } from "@mui/icons-material";
+import { AppBar, Avatar, Box, IconButton, InputAdornment, List, ListItemButton, ListItemText, Paper, Stack, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
+import { DarkModeOutlined, LightModeOutlined, LogoutOutlined, Menu, Search, ViewSidebarOutlined } from "@mui/icons-material";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ReactNode, startTransition, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/view/context/auth.context";
@@ -20,7 +20,7 @@ export function DashboardHeader({ logo, menuOpen, onToggleMenu }: DashboardHeade
 	const navigate = useNavigate();
 	const location = useLocation();
 	const dispatch = useAppDispatch();
-	const { user } = useAuth();
+	const { user, signOut } = useAuth();
 	const themeMode = useAppSelector((state) => state.dashboard.themeMode);
 	const searchResults = useAppSelector((state) => state.dashboard.searchResults);
 	const storeQuery = useAppSelector((state) => state.dashboard.searchQuery);
@@ -122,6 +122,21 @@ export function DashboardHeader({ logo, menuOpen, onToggleMenu }: DashboardHeade
 							</Typography>
 						</Box>
 					</Stack>
+
+					<Tooltip title="Sign out" arrow>
+						<IconButton
+							color="inherit"
+							onClick={signOut}
+							sx={{
+								ml: 0.5,
+								opacity: 0.7,
+								"&:hover": { opacity: 1, color: "error.main" },
+								transition: (t) => t.transitions.create(["opacity", "color"]),
+							}}
+						>
+							<LogoutOutlined fontSize="small" />
+						</IconButton>
+					</Tooltip>
 				</Stack>
 			</Toolbar>
 		</AppBar>

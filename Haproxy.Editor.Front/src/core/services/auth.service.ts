@@ -14,11 +14,34 @@ export class AuthService {
 
 		this.instance = axios.create();
 
-		this.instance.interceptors.request.use((config) => {
-			config.headers["Authorization"] = `Bearer ${this.#token}`;
+		this.instance.interceptors.request.use(async (config) => {
+			const freshUser = await userManager.getUser();
+			if (freshUser && !freshUser.expired) {
+				this.#token = freshUser.access_token;
+			}
 
+			config.headers["Authorization"] = `Bearer ${this.#token}`;
 			return config;
 		});
+
+		this.instance.interceptors.response.use(
+			(response) => response,
+			async (error) => {
+				if (error?.response?.status === 401) {
+					try {
+						const renewed = await userManager.signinSilent();
+						if (renewed) {
+							this.#token = renewed.access_token;
+							error.config.headers["Authorization"] = `Bearer ${this.#token}`;
+							return axios.request(error.config);
+						}
+					} catch {
+						// Silent renew failed — will be handled by session monitoring
+					}
+				}
+				return Promise.reject(error);
+			}
+		);
 
 		return this.instance;
 	}
@@ -33,6 +56,10 @@ export class AuthService {
 
 	async handleSigninCallback() {
 		return await userManager.signinCallback();
+	}
+
+	async silentRenew() {
+		return await userManager.signinSilent();
 	}
 
 	signIn() {

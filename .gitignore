@@ -16,3 +16,4 @@ obj
 Haproxy.Editor.Front/src/core/apis/generated/docs
 .vs
 .vite
+.claude/settings.local.json

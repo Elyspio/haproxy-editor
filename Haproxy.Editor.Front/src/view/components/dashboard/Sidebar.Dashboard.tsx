@@ -1,7 +1,17 @@
 import { alpha, useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { Box, Divider, Drawer, List, ListItemButton, ListItemIcon, ListItemText, Stack, Typography } from "@mui/material";
-import { AnalyticsOutlined, DataObjectOutlined, DnsOutlined, HubOutlined, Inventory2Outlined, LanOutlined, RocketLaunchOutlined, TuneOutlined, ViewQuiltOutlined } from "@mui/icons-material";
+import { Box, Divider, Drawer, List, ListItemButton, ListItemIcon, ListItemText, Typography } from "@mui/material";
+import {
+	AnalyticsOutlined,
+	DataObjectOutlined,
+	DnsOutlined,
+	HubOutlined,
+	Inventory2Outlined,
+	LanOutlined,
+	RocketLaunchOutlined,
+	TuneOutlined,
+	ViewQuiltOutlined
+} from "@mui/icons-material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { routes } from "@/config/view.config";
 import { useAuth } from "@/view/context/auth.context";
@@ -29,7 +39,7 @@ export function SidebarDashboard({ expanded = true, setExpanded }: Readonly<Dash
 	const location = useLocation();
 	const navigate = useNavigate();
 	const dispatch = useAppDispatch();
-	const { user } = useAuth();
+	const { user, signOut } = useAuth();
 	const isDesktop = useMediaQuery(theme.breakpoints.up("lg"));
 	const currentSelection = useAppSelector((state) => state.dashboard.selection);
 	const width = expanded ? DRAWER_WIDTH : MINI_DRAWER_WIDTH;
@@ -124,34 +134,6 @@ export function SidebarDashboard({ expanded = true, setExpanded }: Readonly<Dash
 					))}
 				</List>
 			</Box>
-
-			<Divider />
-			<Stack direction="row" spacing={1.25} alignItems="center" sx={{ px: expanded ? 2 : 1, py: 2 }}>
-				<Box
-					sx={{
-						display: "grid",
-						placeItems: "center",
-						width: 42,
-						height: 42,
-						borderRadius: "50%",
-						backgroundColor: alpha(theme.palette.primary.main, 0.16),
-						color: theme.palette.text.primary,
-						fontWeight: 700,
-					}}
-				>
-					{String(user?.profile?.name ?? user?.profile?.preferred_username ?? "A")
-						.charAt(0)
-						.toUpperCase()}
-				</Box>
-				{expanded ? (
-					<Box sx={{ minWidth: 0 }}>
-						<Typography noWrap>{String(user?.profile?.name ?? user?.profile?.preferred_username ?? "Architect Elylan")}</Typography>
-						<Typography variant="body2" color="text.secondary" noWrap>
-							Cluster operator
-						</Typography>
-					</Box>
-				) : null}
-			</Stack>
 		</Box>
 	);
 
