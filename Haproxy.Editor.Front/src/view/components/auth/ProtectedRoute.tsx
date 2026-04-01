@@ -157,13 +157,7 @@ function LoginPortal() {
 							{ x1: 60, y1: 60, x2: 98, y2: 82 },
 							{ x1: 60, y1: 60, x2: 22, y2: 82 },
 						].map((line, i) => (
-							<line
-								key={i}
-								{...line}
-								stroke="currentColor"
-								strokeWidth="1.5"
-								opacity="0.15"
-							/>
+							<line key={i} {...line} stroke="currentColor" strokeWidth="1.5" opacity="0.15" />
 						))}
 					</Box>
 				</Box>
@@ -181,21 +175,13 @@ function LoginPortal() {
 					>
 						Haproxy Cockpit
 					</Typography>
-					<Typography
-						variant="body1"
-						color="text.secondary"
-						sx={{ textAlign: "center", maxWidth: 360, lineHeight: 1.6 }}
-					>
+					<Typography variant="body1" color="text.secondary" sx={{ textAlign: "center", maxWidth: 360, lineHeight: 1.6 }}>
 						Authenticate with your identity provider to access the load balancer configuration workspace.
 					</Typography>
 				</Stack>
 
 				{/* Status + Action */}
-				<Stack
-					alignItems="center"
-					spacing={3}
-					sx={{ animation: `${fadeUp} 0.8s ease-out 0.3s both`, width: "100%" }}
-				>
+				<Stack alignItems="center" spacing={3} sx={{ animation: `${fadeUp} 0.8s ease-out 0.3s both`, width: "100%" }}>
 					<Box
 						sx={{
 							display: "flex",

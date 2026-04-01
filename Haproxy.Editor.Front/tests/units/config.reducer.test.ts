@@ -28,7 +28,7 @@ describe("config.reducer", () => {
 					},
 				],
 				summary: { frontendCount: 0, backendCount: 0, serverCount: 0 },
-			})
+			}),
 		);
 
 		expect(state.current.version).toBe(3);

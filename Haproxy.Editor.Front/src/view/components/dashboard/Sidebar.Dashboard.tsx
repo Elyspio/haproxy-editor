@@ -10,11 +10,10 @@ import {
 	LanOutlined,
 	RocketLaunchOutlined,
 	TuneOutlined,
-	ViewQuiltOutlined
+	ViewQuiltOutlined,
 } from "@mui/icons-material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { routes } from "@/config/view.config";
-import { useAuth } from "@/view/context/auth.context";
 import { useAppDispatch, useAppSelector } from "@store/utils/utils.selectors";
 import { setDashboardSelection } from "@modules/dashboard/dashboard.reducer";
 import { serializeSelection } from "@modules/dashboard/dashboard.utils";
@@ -39,7 +38,6 @@ export function SidebarDashboard({ expanded = true, setExpanded }: Readonly<Dash
 	const location = useLocation();
 	const navigate = useNavigate();
 	const dispatch = useAppDispatch();
-	const { user, signOut } = useAuth();
 	const isDesktop = useMediaQuery(theme.breakpoints.up("lg"));
 	const currentSelection = useAppSelector((state) => state.dashboard.selection);
 	const width = expanded ? DRAWER_WIDTH : MINI_DRAWER_WIDTH;
@@ -70,7 +68,12 @@ export function SidebarDashboard({ expanded = true, setExpanded }: Readonly<Dash
 			path: `${routes.dashboard.management.path}?${serializeSelection({ section: "acl" })}`,
 			selection: { section: "acl" },
 		},
-		{ label: "Quick Map", icon: <RocketLaunchOutlined />, path: `${routes.dashboard.management.path}?${serializeSelection({ section: "quickmap" })}`, selection: { section: "quickmap" } },
+		{
+			label: "Quick Map",
+			icon: <RocketLaunchOutlined />,
+			path: `${routes.dashboard.management.path}?${serializeSelection({ section: "quickmap" })}`,
+			selection: { section: "quickmap" },
+		},
 		{ label: "Raw", icon: <DataObjectOutlined />, path: routes.raw.view.path, selection: { section: "raw" } },
 	];
 
@@ -95,7 +98,7 @@ export function SidebarDashboard({ expanded = true, setExpanded }: Readonly<Dash
 							selected={location.pathname === item.path && currentSelection.section === item.selection.section}
 							onClick={() => {
 								dispatch(setDashboardSelection(item.selection));
-								navigate(item.path);
+								void navigate(item.path);
 								if (!isDesktop) setExpanded(false);
 							}}
 							sx={{ justifyContent: expanded ? "flex-start" : "center" }}
@@ -123,7 +126,7 @@ export function SidebarDashboard({ expanded = true, setExpanded }: Readonly<Dash
 							}
 							onClick={() => {
 								dispatch(setDashboardSelection(item.selection));
-								navigate(item.path);
+								void navigate(item.path);
 								if (!isDesktop) setExpanded(false);
 							}}
 							sx={{ justifyContent: expanded ? "flex-start" : "center" }}

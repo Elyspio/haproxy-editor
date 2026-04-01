@@ -4,7 +4,18 @@
 		"tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
 		"resolveJsonModule": true,
 		"noEmit": true,
-		"baseUrl": "../",
+		"paths": {
+			"@/*": ["../src/*"],
+			"@apis/*": ["../src/core/apis/*"],
+			"@components/*": ["../src/view/components/*"],
+			"@hooks/*": ["../src/view/hooks/*"],
+			"@pages/*": ["../src/view/pages/*"],
+			"@modules/*": ["../src/store/modules/*"],
+			"@services/*": ["../src/core/services/*"],
+			"@validators/*": ["../src/core/validators/*"],
+			"@store": ["../src/store/index.ts"],
+			"@store/*": ["../src/store/*"]
+		},
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true
 	},

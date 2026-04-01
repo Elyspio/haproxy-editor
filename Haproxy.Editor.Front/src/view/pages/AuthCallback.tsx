@@ -22,7 +22,7 @@ export const AuthCallback = () => {
 
 	useEffect(() => {
 		if (user) {
-			navigate(routes.dashboard.summary.path, { replace: true });
+			void navigate(routes.dashboard.summary.path, { replace: true });
 		}
 	}, [navigate, user]);
 
@@ -40,17 +40,10 @@ export const AuthCallback = () => {
 						: `radial-gradient(ellipse 50% 40% at 50% 45%, ${alpha("#2f6fed", 0.1)}, transparent 70%), #e8edf5`,
 			}}
 		>
-			<Stack
-				alignItems="center"
-				spacing={3}
-				sx={{ animation: `${fadeIn} 0.5s ease-out both` }}
-			>
+			<Stack alignItems="center" spacing={3} sx={{ animation: `${fadeIn} 0.5s ease-out both` }}>
 				<CircularProgress size={40} thickness={3} />
 				<Stack alignItems="center" spacing={0.75}>
-					<Typography
-						variant="h6"
-						sx={{ fontWeight: 700, letterSpacing: "0.06em" }}
-					>
+					<Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: "0.06em" }}>
 						Authenticating
 					</Typography>
 					<Typography variant="body2" color="text.secondary">

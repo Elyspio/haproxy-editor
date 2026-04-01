@@ -40,7 +40,7 @@ export class AuthService {
 					}
 				}
 				return Promise.reject(error);
-			}
+			},
 		);
 
 		return this.instance;

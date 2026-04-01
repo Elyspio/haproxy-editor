@@ -16,8 +16,8 @@ export const setAuth = createAsyncThunk("setAuth", async (user: User | null, { e
 
 	if (user) {
 		authService.user = user;
-		dispatch(startApp());
-		dispatch(loadDashboard());
+		void dispatch(startApp());
+		void dispatch(loadDashboard());
 	}
 });
 
@@ -30,7 +30,7 @@ export const loadAuthSession = createAsyncThunk(
 		await dispatch(setAuth(normalizedUser));
 		return normalizedUser;
 	},
-	{ noPrefix: true }
+	{ noPrefix: true },
 );
 
 export const completeAuthCallback = createAsyncThunk("completeAuthCallback", async (_, { extra, dispatch }) => {

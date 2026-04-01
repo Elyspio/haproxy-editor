@@ -55,7 +55,12 @@ function KpiCard({ title, value, subtitle, tone, trend }: Readonly<DashboardKpi>
 					</Typography>
 					<Typography sx={{ fontSize: 32, lineHeight: 1.1, fontWeight: 700, color, mt: 0.25 }}>{value}</Typography>
 				</Box>
-				<Chip size="small" label={tone} sx={{ textTransform: "uppercase", fontWeight: 700, fontSize: "0.65rem", color, borderColor: alpha(color, 0.36) }} variant="outlined" />
+				<Chip
+					size="small"
+					label={tone}
+					sx={{ textTransform: "uppercase", fontWeight: 700, fontSize: "0.65rem", color, borderColor: alpha(color, 0.36) }}
+					variant="outlined"
+				/>
 			</Stack>
 			<Box>
 				<Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
@@ -156,7 +161,14 @@ function ServerHealth({ backends }: Readonly<{ backends: RuntimeBackendStatus[] 
 						<Typography variant="body2" sx={{ fontSize: "0.75rem" }}>
 							{stats.totalHealthy} / {stats.totalServers} healthy
 						</Typography>
-						<Typography variant="body2" sx={{ fontWeight: 700, fontSize: "0.75rem", color: healthyPct >= 80 ? theme.palette.success.main : healthyPct >= 50 ? theme.palette.warning.main : theme.palette.error.main }}>
+						<Typography
+							variant="body2"
+							sx={{
+								fontWeight: 700,
+								fontSize: "0.75rem",
+								color: healthyPct >= 80 ? theme.palette.success.main : healthyPct >= 50 ? theme.palette.warning.main : theme.palette.error.main,
+							}}
+						>
 							{Math.round(healthyPct)}%
 						</Typography>
 					</Stack>
@@ -206,8 +218,7 @@ function BackendBreakdown({ backends }: Readonly<{ backends: RuntimeBackendStatu
 			</Stack>
 			<Stack spacing={1} sx={{ flex: 1, minHeight: 0, overflow: "auto" }}>
 				{sorted.map((backend) => {
-					const statusColor =
-						backend.status === "up" ? theme.palette.success.main : backend.status === "down" ? theme.palette.error.main : theme.palette.warning.main;
+					const statusColor = backend.status === "up" ? theme.palette.success.main : backend.status === "down" ? theme.palette.error.main : theme.palette.warning.main;
 					const barWidth = maxSessions > 0 ? (backend.currentSessions / maxSessions) * 100 : 0;
 
 					return (
@@ -305,12 +316,7 @@ function ActiveAlerts() {
 										primaryTypographyProps={{ variant: "body2", fontWeight: 600, fontSize: "0.8rem" }}
 										secondaryTypographyProps={{ variant: "body2", fontSize: "0.7rem" }}
 									/>
-									<Chip
-										size="small"
-										label={alert.severity}
-										color={isCritical ? "error" : "warning"}
-										sx={{ fontWeight: 700, fontSize: "0.65rem", height: 22 }}
-									/>
+									<Chip size="small" label={alert.severity} color={isCritical ? "error" : "warning"} sx={{ fontWeight: 700, fontSize: "0.65rem", height: 22 }} />
 								</ListItem>
 							);
 						})}

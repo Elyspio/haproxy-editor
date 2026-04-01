@@ -19,6 +19,10 @@ function asString(value: unknown): string | null {
 	return typeof value === "string" && value.trim() !== "" ? value : null;
 }
 
+function asStringOrFallback(value: unknown, fallback = ""): string {
+	return asString(value) ?? fallback;
+}
+
 function asEnumString(value: unknown, fallback = "unknown"): string {
 	return asString(value)?.toLowerCase() ?? fallback;
 }
@@ -45,10 +49,10 @@ function asRecord(value: unknown): Record<string, unknown> {
 function ensureKpi(value: unknown, title: string): DashboardKpi {
 	const item = asRecord(value);
 	return {
-		title: String(item.title ?? title),
+		title: asStringOrFallback(item.title, title),
 		value: asNumber(item.value),
-		subtitle: String(item.subtitle ?? ""),
-		tone: String(item.tone ?? "neutral"),
+		subtitle: asStringOrFallback(item.subtitle),
+		tone: asEnumString(item.tone, "neutral"),
 		trend: Array.isArray(item.trend) ? item.trend.map(asNumber) : [],
 	};
 }
@@ -61,9 +65,9 @@ function ensureAlerts(value: unknown): DashboardAlert[] {
 	return value.map((entry) => {
 		const item = asRecord(entry);
 		return {
-			id: String(item.id ?? ""),
+			id: asStringOrFallback(item.id),
 			severity: asEnumString(item.severity, "info"),
-			message: String(item.message ?? ""),
+			message: asStringOrFallback(item.message),
 			resourceType: asString(item.resourceType)?.toLowerCase() ?? null,
 			resourceName: asString(item.resourceName),
 		};
@@ -78,7 +82,7 @@ function ensureServers(value: unknown): RuntimeServerStatus[] {
 	return value.map((entry) => {
 		const item = asRecord(entry);
 		return {
-			name: String(item.name ?? ""),
+			name: asStringOrFallback(item.name),
 			status: asEnumString(item.status),
 			address: asString(item.address),
 			port: item.port == null ? null : asNumber(item.port),
@@ -99,7 +103,7 @@ function ensureBackends(value: unknown): RuntimeBackendStatus[] {
 	return value.map((entry) => {
 		const item = asRecord(entry);
 		return {
-			name: String(item.name ?? ""),
+			name: asStringOrFallback(item.name),
 			status: asEnumString(item.status),
 			currentSessions: asNumber(item.currentSessions),
 			sessionRate: asNumber(item.sessionRate),
@@ -133,7 +137,7 @@ export function normalizeDashboardSnapshot(snapshot: unknown): DashboardSnapshot
 
 	return {
 		summary: {
-			generatedAt: String(summary.generatedAt ?? new Date(0).toISOString()),
+			generatedAt: asStringOrFallback(summary.generatedAt, new Date(0).toISOString()),
 			runtimeStatus: asEnumString(summary.runtimeStatus),
 			alerts: { ...ensureKpi(summary.alerts, "Alerts"), tone: asEnumString(asRecord(summary.alerts).tone, "neutral") },
 			routes: { ...ensureKpi(summary.routes, "Routes"), tone: asEnumString(asRecord(summary.routes).tone, "neutral") },

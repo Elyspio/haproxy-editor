@@ -15,6 +15,10 @@ function asString(value: unknown): string | null {
 	return typeof value === "string" && value.trim() !== "" ? value : null;
 }
 
+function asStringOrFallback(value: unknown, fallback = ""): string {
+	return asString(value) ?? fallback;
+}
+
 function asNumber(value: unknown): number | null {
 	if (typeof value === "number" && Number.isFinite(value)) {
 		return value;
@@ -51,7 +55,7 @@ function ensureDefaults(value: unknown): HaproxyDefaultsResource[] {
 	return value.map((entry) => {
 		const item = asRecord(entry);
 		return {
-			name: String(item.name ?? ""),
+			name: asStringOrFallback(item.name),
 			mode: asString(item.mode),
 		};
 	});
@@ -65,7 +69,7 @@ function ensureBinds(value: unknown): HaproxyBindResource[] {
 	return value.map((entry) => {
 		const item = asRecord(entry);
 		return {
-			name: String(item.name ?? ""),
+			name: asStringOrFallback(item.name),
 			address: asString(item.address),
 			port: asNumber(item.port),
 		};
@@ -80,7 +84,7 @@ function ensureAcls(value: unknown): HaproxyAclResource[] {
 	return value.map((entry) => {
 		const item = asRecord(entry);
 		return {
-			name: String(item.name ?? ""),
+			name: asStringOrFallback(item.name),
 			criterion: asString(item.criterion),
 			value: asString(item.value),
 		};
@@ -95,7 +99,7 @@ function ensureRules(value: unknown): HaproxyBackendSwitchingRuleResource[] {
 	return value.map((entry) => {
 		const item = asRecord(entry);
 		return {
-			backendName: String(item.backendName ?? ""),
+			backendName: asStringOrFallback(item.backendName),
 			cond: asString(item.cond),
 			condTest: asString(item.condTest),
 		};
@@ -110,7 +114,7 @@ function ensureServers(value: unknown): HaproxyServerResource[] {
 	return value.map((entry) => {
 		const item = asRecord(entry);
 		return {
-			name: String(item.name ?? ""),
+			name: asStringOrFallback(item.name),
 			address: asString(item.address),
 			port: asNumber(item.port),
 			check: asString(item.check),
@@ -126,7 +130,7 @@ function ensureFrontends(value: unknown): HaproxyFrontendResource[] {
 	return value.map((entry) => {
 		const item = asRecord(entry);
 		return {
-			name: String(item.name ?? ""),
+			name: asStringOrFallback(item.name),
 			mode: asString(item.mode),
 			defaultBackend: asString(item.defaultBackend),
 			binds: ensureBinds(item.binds),
@@ -144,7 +148,7 @@ function ensureBackends(value: unknown): HaproxyBackendResource[] {
 	return value.map((entry) => {
 		const item = asRecord(entry);
 		return {
-			name: String(item.name ?? ""),
+			name: asStringOrFallback(item.name),
 			mode: asString(item.mode),
 			balance: asString(item.balance),
 			servers: ensureServers(item.servers),

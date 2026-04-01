@@ -114,10 +114,7 @@ function FlowCardNode({ data }: Readonly<{ data: FlowCardData }>) {
 				borderRadius: 3.5,
 				border: `1px solid ${alpha(data.accent, 0.22)}`,
 				background: `linear-gradient(135deg, ${alpha(data.accent, theme.palette.mode === "dark" ? 0.2 : 0.12)} 0%, ${alpha(theme.palette.background.paper, 0.98)} 100%)`,
-				boxShadow:
-					theme.palette.mode === "dark"
-						? `0 14px 28px ${alpha("#020617", 0.35)}`
-						: `0 14px 28px ${alpha("#8aa4c8", 0.18)}`,
+				boxShadow: theme.palette.mode === "dark" ? `0 14px 28px ${alpha("#020617", 0.35)}` : `0 14px 28px ${alpha("#8aa4c8", 0.18)}`,
 				position: "relative",
 				overflow: "hidden",
 				"&::before": {
@@ -236,8 +233,7 @@ export function HaproxySummaryGraph() {
 
 					const runtimeBackend = runtimeBackends.find((item) => item.name === backend.name);
 					const routingLabel =
-						frontend.backendSwitchingRules.find((rule) => rule.backendName === backend.name)?.condTest ??
-						(frontend.defaultBackend === backend.name ? "default" : "");
+						frontend.backendSwitchingRules.find((rule) => rule.backendName === backend.name)?.condTest ?? (frontend.defaultBackend === backend.name ? "default" : "");
 					nextNodes.push({
 						id: `backend-${backend.name}`,
 						type: "flowCard",

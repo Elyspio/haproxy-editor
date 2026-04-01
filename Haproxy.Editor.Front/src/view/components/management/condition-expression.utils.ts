@@ -42,11 +42,7 @@ export function createAclClause(name = "", negated = false): ConditionAclClause 
 	};
 }
 
-export function createGroupClause(
-	operator: ConditionOperator = "and",
-	items: ConditionClause[] = [createAclClause()],
-	preserveGrouping = false
-): ConditionGroupClause {
+export function createGroupClause(operator: ConditionOperator = "and", items: ConditionClause[] = [createAclClause()], preserveGrouping = false): ConditionGroupClause {
 	return {
 		kind: "group",
 		operator,
@@ -106,7 +102,15 @@ function tokenizeConditionExpression(value: string) {
 		}
 
 		const start = index;
-		while (index < value.length && !/\s/.test(value[index]) && value[index] !== "(" && value[index] !== ")" && value[index] !== "!" && value[index] !== "&" && value[index] !== "|") {
+		while (
+			index < value.length &&
+			!/\s/.test(value[index]) &&
+			value[index] !== "(" &&
+			value[index] !== ")" &&
+			value[index] !== "!" &&
+			value[index] !== "&" &&
+			value[index] !== "|"
+		) {
 			index += 1;
 		}
 
@@ -403,21 +407,19 @@ function renameConditionAclInClause(clause: ConditionClause, previousName: strin
 	};
 }
 
-export function replaceAclReferencesInConditionExpression(
-	value: string | null | undefined,
-	previousName: string,
-	nextName: string
-): string | null {
+export function replaceAclReferencesInConditionExpression(value: string | null | undefined, previousName: string, nextName: string): string | null {
 	if (!value || !previousName || !nextName || previousName === nextName) {
 		return value ?? null;
 	}
 
 	const parsed = parseConditionExpression(value);
 	if (parsed.kind === "tree") {
-		return serializeConditionExpression({
-			kind: "tree",
-			root: renameConditionAclInClause(parsed.root, previousName, nextName),
-		}) || null;
+		return (
+			serializeConditionExpression({
+				kind: "tree",
+				root: renameConditionAclInClause(parsed.root, previousName, nextName),
+			}) || null
+		);
 	}
 
 	const pattern = createConditionAclReferencePattern(previousName);

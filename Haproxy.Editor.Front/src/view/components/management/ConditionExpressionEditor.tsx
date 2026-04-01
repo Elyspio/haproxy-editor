@@ -11,7 +11,7 @@ import {
 	ensureTreeConditionExpression,
 	parseConditionExpression,
 	type ParsedConditionExpression,
-	serializeConditionExpression
+	serializeConditionExpression,
 } from "./condition-expression.utils";
 
 type ConditionExpressionEditorProps = {
@@ -140,16 +140,7 @@ function CompactGroupEditor({ node, aclOptions, depth, onChange, onDelete }: Rea
 			<Stack spacing={0.5}>
 				{/* Group header */}
 				<Stack direction="row" alignItems="center" spacing={0.5} sx={{ flexWrap: "wrap", gap: 0.5 }}>
-					{node.negated ? (
-						<Chip
-							label="NOT"
-							size="small"
-							color="error"
-							variant="outlined"
-							onDelete={toggleNegated}
-							sx={{ fontWeight: 600, height: 24 }}
-						/>
-					) : null}
+					{node.negated ? <Chip label="NOT" size="small" color="error" variant="outlined" onDelete={toggleNegated} sx={{ fontWeight: 600, height: 24 }} /> : null}
 					{node.items.length > 1 ? (
 						<Chip
 							label={node.operator.toUpperCase()}
@@ -255,7 +246,7 @@ function AclClauseRow({ item, aclOptions, onNameChange, onNegatedToggle, onDelet
 				options={aclOptions}
 				value={item.name}
 				inputValue={item.name}
-				onChange={(_, nextValue) => onNameChange(typeof nextValue === "string" ? nextValue : nextValue ?? "")}
+				onChange={(_, nextValue) => onNameChange(typeof nextValue === "string" ? nextValue : (nextValue ?? ""))}
 				onInputChange={(_, nextValue, reason) => {
 					if (reason === "reset") return;
 					onNameChange(nextValue);

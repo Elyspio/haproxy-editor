@@ -100,9 +100,9 @@ public sealed record RuntimeBackendStatus
 
 	public int SessionRate { get; init; }
 
-	public int BytesIn { get; init; }
+	public long BytesIn { get; init; }
 
-	public int BytesOut { get; init; }
+	public long BytesOut { get; init; }
 
 	public int HealthyServers { get; init; }
 

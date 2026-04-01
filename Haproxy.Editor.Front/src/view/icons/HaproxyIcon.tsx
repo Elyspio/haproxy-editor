@@ -17,7 +17,6 @@ export default function HaproxyIcon() {
 					</tspan>
 					aproxy
 				</text>
-
 			</svg>
 		</SvgIcon>
 	);

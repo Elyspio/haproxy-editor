@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Box } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { setCurrentSnapshot } from "@modules/config/config.reducer";
@@ -9,12 +9,13 @@ import { setDashboardSelection } from "@modules/dashboard/dashboard.reducer";
 import type { DashboardSelection } from "@modules/dashboard/dashboard.types";
 import { routes } from "@/config/view.config";
 import { createUniqueAclName, getAclKindLabel, hasAclReference } from "@components/management/acl.utils";
-import { AclLibrarySection } from "@components/management/AclLibrarySection";
-import { BackendManagementSection } from "@components/management/BackendManagementSection";
-import { FrontendManagementSection } from "@components/management/FrontendManagementSection";
-import { GlobalConfigSection } from "@components/management/GlobalConfigSection";
-import { MappingSection } from "@components/management/MappingSection";
-import { QuickMapSection } from "@components/management/QuickMapSection";
+
+const MappingSection = React.lazy(() => import("@components/management/MappingSection").then((module) => ({ default: module.MappingSection })));
+const QuickMapSection = React.lazy(() => import("@components/management/QuickMapSection").then((module) => ({ default: module.QuickMapSection })));
+const FrontendManagementSection = React.lazy(() => import("@components/management/FrontendManagementSection").then((module) => ({ default: module.FrontendManagementSection })));
+const BackendManagementSection = React.lazy(() => import("@components/management/BackendManagementSection").then((module) => ({ default: module.BackendManagementSection })));
+const AclLibrarySection = React.lazy(() => import("@components/management/AclLibrarySection").then((module) => ({ default: module.AclLibrarySection })));
+const GlobalConfigSection = React.lazy(() => import("@components/management/GlobalConfigSection").then((module) => ({ default: module.GlobalConfigSection })));
 
 export function ManagementWorkspace() {
 	const navigate = useNavigate();
@@ -38,7 +39,7 @@ export function ManagementWorkspace() {
 	useEffect(() => {
 		if (JSON.stringify(effectiveSelection) !== JSON.stringify(selection)) {
 			dispatch(setDashboardSelection(effectiveSelection));
-			navigate(`${routes.dashboard.management.path}?${serializeSelection(effectiveSelection)}`, { replace: true });
+			void navigate(`${routes.dashboard.management.path}?${serializeSelection(effectiveSelection)}`, { replace: true });
 		}
 	}, [dispatch, effectiveSelection, navigate, selection]);
 
@@ -49,7 +50,10 @@ export function ManagementWorkspace() {
 			return selectedFrontend;
 		}
 
-		return effectiveSelection.section === "frontend" || effectiveSelection.section === "mapping" || effectiveSelection.section === "acl" || effectiveSelection.section === "quickmap"
+		return effectiveSelection.section === "frontend" ||
+			effectiveSelection.section === "mapping" ||
+			effectiveSelection.section === "acl" ||
+			effectiveSelection.section === "quickmap"
 			? (snapshot.frontends[0] ?? null)
 			: null;
 	}, [effectiveSelection.frontendName, effectiveSelection.section, snapshot.frontends]);
@@ -75,14 +79,14 @@ export function ManagementWorkspace() {
 
 	const frontendScopedBackends = useMemo(
 		() => snapshot.backends.filter((backend) => frontendRelatedBackendNames.has(backend.name)),
-		[frontendRelatedBackendNames, snapshot.backends]
+		[frontendRelatedBackendNames, snapshot.backends],
 	);
 
 	const shouldFilterBackendPanel = Boolean(frontendContext && effectiveSelection.section === "backend" && effectiveSelection.frontendName);
 	const backendCandidates = shouldFilterBackendPanel ? frontendScopedBackends : snapshot.backends;
 	const selectedBackend = useMemo(
 		() => backendCandidates.find((backend) => backend.name === effectiveSelection.backendName) ?? backendCandidates[0] ?? null,
-		[backendCandidates, effectiveSelection.backendName]
+		[backendCandidates, effectiveSelection.backendName],
 	);
 	const selectedRuntimeBackend = runtimeBackends.find((backend) => backend.name === selectedBackend?.name) ?? null;
 
@@ -128,7 +132,7 @@ export function ManagementWorkspace() {
 
 				return [...groupedEntries.values()];
 			}),
-		[snapshot.frontends]
+		[snapshot.frontends],
 	);
 
 	const filteredAclEntries = useMemo(() => aclEntries.filter((entry) => entry.frontendName === aclFrontendName), [aclEntries, aclFrontendName]);
@@ -152,7 +156,7 @@ export function ManagementWorkspace() {
 
 	const selectedAclEntry = useMemo(
 		() => filteredAclEntries.find((entry) => entry.acl.name === effectiveSelection.aclName) ?? filteredAclEntries[0] ?? null,
-		[effectiveSelection.aclName, filteredAclEntries]
+		[effectiveSelection.aclName, filteredAclEntries],
 	);
 	const selectedAclUsages = selectedAclEntry?.usages ?? [];
 	const mappingRules = frontendContext?.backendSwitchingRules ?? [];
@@ -160,7 +164,7 @@ export function ManagementWorkspace() {
 
 	const setSelection = (nextSelection: DashboardSelection) => {
 		dispatch(setDashboardSelection(nextSelection));
-		navigate(`${routes.dashboard.management.path}?${serializeSelection(nextSelection)}`);
+		void navigate(`${routes.dashboard.management.path}?${serializeSelection(nextSelection)}`);
 	};
 
 	const updateSnapshot = (updater: Parameters<typeof withSnapshot>[1]) => {
@@ -176,7 +180,7 @@ export function ManagementWorkspace() {
 		const existingAcls = snapshot.frontends.find((frontend) => frontend.name === ownerFrontendName)?.acls ?? [];
 		const aclName = createUniqueAclName(
 			existingAcls.map((acl) => acl.name),
-			`acl_${existingAcls.length + 1}`
+			`acl_${existingAcls.length + 1}`,
 		);
 
 		updateSnapshot((draft) => {
@@ -212,20 +216,20 @@ export function ManagementWorkspace() {
 
 			const nextAclName = createUniqueAclName(
 				targetFrontend.acls.map((acl) => acl.name),
-				selectedAclEntry.acl.name
+				selectedAclEntry.acl.name,
 			);
 
 			targetFrontend.acls.push(
 				...movedAcls.map((acl) => ({
 					...acl,
 					name: nextAclName,
-				}))
+				})),
 			);
 		});
 
 		const nextAclName = createUniqueAclName(
 			(snapshot.frontends.find((frontend) => frontend.name === nextFrontendName)?.acls ?? []).map((acl) => acl.name),
-			selectedAclEntry.acl.name
+			selectedAclEntry.acl.name,
 		);
 
 		setSelection({ section: "acl", frontendName: nextFrontendName, aclName: nextAclName });
@@ -341,13 +345,7 @@ export function ManagementWorkspace() {
 					/>
 				) : null}
 				{effectiveSelection.section === "quickmap" ? (
-					<QuickMapSection
-						snapshot={snapshot}
-						frontendContext={frontendContext}
-						updateSnapshot={updateSnapshot}
-						setSelection={setSelection}
-						focused={isContextFocused}
-					/>
+					<QuickMapSection snapshot={snapshot} frontendContext={frontendContext} updateSnapshot={updateSnapshot} setSelection={setSelection} focused={isContextFocused} />
 				) : null}
 			</Box>
 		</Box>

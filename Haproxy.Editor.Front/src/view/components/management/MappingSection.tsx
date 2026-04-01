@@ -73,10 +73,7 @@ function uniqueValues(values: string[]) {
 	return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
 }
 
-function buildRulePreview(
-	rule: HaproxyFrontendResource["backendSwitchingRules"][number],
-	aclLookup: Map<string, HaproxyFrontendResource["acls"][number]>
-) {
+function buildRulePreview(rule: HaproxyFrontendResource["backendSwitchingRules"][number], aclLookup: Map<string, HaproxyFrontendResource["acls"][number]>) {
 	const hostValues: string[] = [];
 	const pathValues: string[] = [];
 	const aclValues: string[] = [];
@@ -190,18 +187,14 @@ export function MappingSection({
 
 					return left.backendName.localeCompare(right.backendName, undefined, { sensitivity: "base" });
 				}),
-		[aclLookup, mappingRules]
+		[aclLookup, mappingRules],
 	);
 
 	const effectiveSelectedRuleIndex =
-		mappingRules.length === 0
-			? null
-			: selectedRuleIndex !== null && ruleRows.some((row) => row.id === selectedRuleIndex)
-				? selectedRuleIndex
-				: (ruleRows[0]?.id ?? null);
+		mappingRules.length === 0 ? null : selectedRuleIndex !== null && ruleRows.some((row) => row.id === selectedRuleIndex) ? selectedRuleIndex : (ruleRows[0]?.id ?? null);
 
-	const selectedRule = effectiveSelectedRuleIndex === null ? null : mappingRules[effectiveSelectedRuleIndex] ?? null;
-	const selectedRuleRow = effectiveSelectedRuleIndex === null ? null : ruleRows.find((row) => row.id === effectiveSelectedRuleIndex) ?? null;
+	const selectedRule = effectiveSelectedRuleIndex === null ? null : (mappingRules[effectiveSelectedRuleIndex] ?? null);
+	const selectedRuleRow = effectiveSelectedRuleIndex === null ? null : (ruleRows.find((row) => row.id === effectiveSelectedRuleIndex) ?? null);
 	const rowSelectionModel: GridRowSelectionModel = {
 		type: "include",
 		ids: effectiveSelectedRuleIndex === null ? new Set() : new Set([effectiveSelectedRuleIndex]),
@@ -241,7 +234,7 @@ export function MappingSection({
 				sortable: false,
 			},
 		],
-		[]
+		[],
 	);
 
 	return (
@@ -417,12 +410,7 @@ export function MappingSection({
 														{selectedRuleRow.routeKind} · {selectedRuleRow.conditionSummary}
 													</Typography>
 												</Box>
-												<Button
-													size="small"
-													color="error"
-													variant="text"
-													onClick={() => deleteMappingRule(effectiveSelectedRuleIndex ?? 0)}
-												>
+												<Button size="small" color="error" variant="text" onClick={() => deleteMappingRule(effectiveSelectedRuleIndex ?? 0)}>
 													Delete
 												</Button>
 											</Stack>

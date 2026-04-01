@@ -1,4 +1,4 @@
-import { createRoutesFromChildren, Navigate, Route, RouterProvider, createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, createRoutesFromChildren, Navigate, Route, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "@/view/context/auth.context";
 import { ProtectedRoute } from "@components/auth/ProtectedRoute";
 import { AuthCallback } from "@pages/AuthCallback";
@@ -9,11 +9,13 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import { Provider } from "react-redux";
 import { ToastContainer } from "react-toastify";
 import { Summary } from "@components/summary/Summary";
-import { FlowDashboard } from "@components/summary/Flow.Dashboard";
-import { RawView } from "@components/Raw.View";
-import { ManagementWorkspace } from "@components/Management.Workspace";
 import { createCockpitTheme } from "./theme/cockpit.theme";
 import { useAppSelector } from "@store/utils/utils.selectors";
+import React from "react";
+
+const FlowDashboard = React.lazy(() => import("@components/summary/Flow.Dashboard").then((module) => ({ default: module.FlowDashboard })));
+const ManagementWorkspace = React.lazy(() => import("@components/Management.Workspace").then((module) => ({ default: module.ManagementWorkspace })));
+const RawView = React.lazy(() => import("@components/Raw.View").then((module) => ({ default: module.RawView })));
 
 const router = createBrowserRouter(
 	createRoutesFromChildren(
@@ -38,8 +40,8 @@ const router = createBrowserRouter(
 				<Route path={routes.global.edit.path} element={<Navigate replace to={`${routes.dashboard.management.path}?section=global`} />} />
 				<Route path={routes.default.edit.path} element={<Navigate replace to={`${routes.dashboard.management.path}?section=global`} />} />
 			</Route>
-		</>
-	)
+		</>,
+	),
 );
 
 window["haproxy-editor"].router = router;

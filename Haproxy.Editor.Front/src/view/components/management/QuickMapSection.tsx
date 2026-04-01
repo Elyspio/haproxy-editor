@@ -1,19 +1,5 @@
 import { Add, DeleteOutline, RocketLaunchOutlined } from "@mui/icons-material";
-import {
-	Autocomplete,
-	Box,
-	Button,
-	Chip,
-	Divider,
-	IconButton,
-	MenuItem,
-	Paper,
-	Stack,
-	TextField,
-	ToggleButton,
-	ToggleButtonGroup,
-	Typography,
-} from "@mui/material";
+import { Autocomplete, Box, Button, Chip, Divider, IconButton, MenuItem, Paper, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import { useState } from "react";
 import type { HaproxyFrontendResource, HaproxyResourceSnapshot } from "@modules/config/config.types";
@@ -120,9 +106,7 @@ export function QuickMapSection({ snapshot, frontendContext, updateSnapshot, set
 
 	const targetBackendName = draft.backendMode === "existing" ? draft.existingBackendName : draft.newBackend.name;
 	const hasMatch = draft.matchPrimary.trim() || draft.matchSecondary.trim();
-	const canSubmit = Boolean(
-		draft.frontendName && targetBackendName && (hasMatch || draft.extraAclNames.length > 0) && expressionPreview
-	);
+	const canSubmit = Boolean(draft.frontendName && targetBackendName && (hasMatch || draft.extraAclNames.length > 0) && expressionPreview);
 
 	const handleSubmit = () => {
 		if (!canSubmit) return;
@@ -476,7 +460,9 @@ export function QuickMapSection({ snapshot, frontendContext, updateSnapshot, set
 									fullWidth
 									value={expressionPreview}
 									slotProps={{ input: { readOnly: true } }}
-									helperText={expressionPreview ? `use_backend ${targetBackendName} ${draft.cond} ${expressionPreview}` : "Fill in the route match or select ACLs"}
+									helperText={
+										expressionPreview ? `use_backend ${targetBackendName} ${draft.cond} ${expressionPreview}` : "Fill in the route match or select ACLs"
+									}
 								/>
 							</Stack>
 							<Button variant="contained" size="large" disabled={!canSubmit} onClick={handleSubmit} sx={{ alignSelf: "flex-start" }}>

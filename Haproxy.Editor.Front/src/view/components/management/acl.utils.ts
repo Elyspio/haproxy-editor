@@ -1,9 +1,5 @@
 import type { HaproxyAclResource, HaproxyBackendSwitchingRuleResource } from "@modules/config/config.types";
-import {
-	getConditionAclNames,
-	hasAclReferenceInConditionExpression,
-	replaceAclReferencesInConditionExpression,
-} from "./condition-expression.utils";
+import { hasAclReferenceInConditionExpression, replaceAclReferencesInConditionExpression } from "./condition-expression.utils";
 
 export type AclPresetId = "path_prefix" | "path_exact" | "path_regex" | "host" | "host_prefix" | "host_regex" | "source" | "method" | "header" | "header_regex" | "custom";
 

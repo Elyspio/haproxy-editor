@@ -13,7 +13,7 @@ export const startApp = createAsyncThunk(
 		const configService = getService(ConfigService, extra);
 		return await configService.getConfig();
 	},
-	{ noPrefix: true }
+	{ noPrefix: true },
 );
 
 export const syncConfig = createAsyncThunk("sync", async (_, { extra, getState, dispatch }) => {
@@ -26,7 +26,7 @@ export const syncConfig = createAsyncThunk("sync", async (_, { extra, getState, 
 	}
 
 	await configService.updateConfig(getState().config.current);
-	dispatch(loadDashboard());
+	void dispatch(loadDashboard());
 	return getState().config.current;
 });
 

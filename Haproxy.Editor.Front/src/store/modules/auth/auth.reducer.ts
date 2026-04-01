@@ -11,8 +11,8 @@ const slice = createSlice({
 	name: "auth",
 	initialState,
 	reducers: {},
-	extraReducers: ({ addCase }) => {
-		addCase(setAuth.fulfilled, (state, action) => {
+	extraReducers: (builder) => {
+		builder.addCase(setAuth.fulfilled, (state, action) => {
 			state.user = action.meta.arg;
 			if (action.meta.arg != null) {
 				state.step = AuthStep.Connected;
@@ -21,7 +21,7 @@ const slice = createSlice({
 			}
 		});
 
-		addCase(setAuth.rejected, (state) => {
+		builder.addCase(setAuth.rejected, (state) => {
 			state.step = AuthStep.Disconnected;
 		});
 	},

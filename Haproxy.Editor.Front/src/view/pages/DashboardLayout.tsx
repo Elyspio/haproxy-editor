@@ -27,7 +27,7 @@ export function DashboardLayout() {
 					minHeight: 0,
 				}}
 			>
-			<DashboardHeader logo={<HaproxyIcon />} menuOpen={navigationExpanded} onToggleMenu={setNavigationExpanded} />
+				<DashboardHeader logo={<HaproxyIcon />} menuOpen={navigationExpanded} onToggleMenu={setNavigationExpanded} />
 				<Box component="main" sx={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, overflow: "hidden" }}>
 					<Outlet />
 				</Box>

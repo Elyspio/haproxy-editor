@@ -4,12 +4,7 @@ import { buildAclFromPresetState, createUniqueAclName } from "@components/manage
 import { deriveAclNameFromValue } from "@components/management/QuickMapSection";
 import type { HaproxyResourceSnapshot } from "@modules/config/config.types";
 
-function buildExpressionPreview(
-	generatedAclName: string,
-	extraAclNames: string[],
-	combineOperator: "and" | "or",
-	hasMatch: boolean
-): string {
+function buildExpressionPreview(generatedAclName: string, extraAclNames: string[], combineOperator: "and" | "or", hasMatch: boolean): string {
 	const allAclNames = hasMatch ? [generatedAclName, ...extraAclNames] : [...extraAclNames];
 
 	if (allAclNames.length === 0) {

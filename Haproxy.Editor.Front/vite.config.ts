@@ -1,4 +1,7 @@
 import { getDefaultConfig } from "@elyspio/vite-eslint-config";
+import { fileURLToPath } from "node:url";
+
+const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 const config = getDefaultConfig({ basePath: __dirname, port: 3000 });
 

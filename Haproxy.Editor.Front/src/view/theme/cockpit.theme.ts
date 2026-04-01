@@ -1,4 +1,4 @@
-import { alpha, createTheme, responsiveFontSizes, type PaletteMode } from "@mui/material";
+import { alpha, createTheme, type PaletteMode, responsiveFontSizes } from "@mui/material";
 import type { ThemeMode } from "@modules/dashboard/dashboard.types";
 
 function createPalette(mode: PaletteMode) {
@@ -71,9 +71,10 @@ export function createCockpitTheme(mode: ThemeMode) {
 							colorScheme: mode,
 						},
 						body: {
-							background: mode === "light"
-								? "radial-gradient(circle at top, rgba(47,111,237,0.08), transparent 30%), #edf2f9"
-								: "radial-gradient(circle at top, rgba(93,143,255,0.14), transparent 25%), #0b1220",
+							background:
+								mode === "light"
+									? "radial-gradient(circle at top, rgba(47,111,237,0.08), transparent 30%), #edf2f9"
+									: "radial-gradient(circle at top, rgba(93,143,255,0.14), transparent 25%), #0b1220",
 						},
 					},
 				},
@@ -82,9 +83,7 @@ export function createCockpitTheme(mode: ThemeMode) {
 						root: {
 							backgroundImage: "none",
 							border: `1px solid ${palette.divider}`,
-							boxShadow: mode === "light"
-								? "0 16px 40px rgba(20, 34, 56, 0.08)"
-								: "0 18px 42px rgba(2, 7, 17, 0.42)",
+							boxShadow: mode === "light" ? "0 16px 40px rgba(20, 34, 56, 0.08)" : "0 18px 42px rgba(2, 7, 17, 0.42)",
 						},
 					},
 				},
@@ -115,6 +114,6 @@ export function createCockpitTheme(mode: ThemeMode) {
 					},
 				},
 			},
-		})
+		}),
 	);
 }

@@ -60,7 +60,7 @@ export async function wrapErrorWithToast<T>(fn: Promise<T>, errorMessage: ReactN
 	try {
 		return (await fn) as T;
 	} catch (e) {
-		toast.error(errorMessage, { ...options, style: { ...(options.style ?? {}) } });
+		toast.error(errorMessage, { ...options, style: { ...options.style } });
 		throw e;
 	}
 }

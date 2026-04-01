@@ -33,7 +33,15 @@ export function DashboardHeader({ logo, menuOpen, onToggleMenu }: DashboardHeade
 		});
 	}, [deferredQuery, dispatch]);
 
-	const displayName = useMemo(() => String(user?.profile?.name ?? user?.profile?.preferred_username ?? "Operator"), [user]);
+	const displayName = useMemo(() => {
+		const preferredName = user?.profile?.name;
+		if (typeof preferredName === "string" && preferredName.trim() !== "") {
+			return preferredName;
+		}
+
+		const username = user?.profile?.preferred_username;
+		return typeof username === "string" && username.trim() !== "" ? username : "Operator";
+	}, [user]);
 
 	return (
 		<AppBar
@@ -54,7 +62,6 @@ export function DashboardHeader({ logo, menuOpen, onToggleMenu }: DashboardHeade
 					<Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
 						<Stack direction="row" alignItems="center" spacing={1}>
 							{logo}
-						
 						</Stack>
 					</Link>
 				</Stack>
@@ -95,7 +102,7 @@ export function DashboardHeader({ logo, menuOpen, onToggleMenu }: DashboardHeade
 										onClick={() => {
 											dispatch(setDashboardSelection(result.selection));
 											setQuery("");
-											navigate(`${result.route}${result.route === "/" ? "" : `?${serializeSelection(result.selection)}`}`);
+											void navigate(`${result.route}${result.route === "/" ? "" : `?${serializeSelection(result.selection)}`}`);
 										}}
 									>
 										<ListItemText primary={result.title} secondary={`${result.kind.toUpperCase()} · ${result.subtitle}`} />
@@ -112,9 +119,7 @@ export function DashboardHeader({ logo, menuOpen, onToggleMenu }: DashboardHeade
 					</IconButton>
 
 					<Stack direction="row" alignItems="center" spacing={1.25} sx={{ pl: 1 }}>
-						<Avatar sx={{ bgcolor: alpha(theme.palette.primary.main, 0.2), color: theme.palette.text.primary }}>
-							{displayName.charAt(0).toUpperCase()}
-						</Avatar>
+						<Avatar sx={{ bgcolor: alpha(theme.palette.primary.main, 0.2), color: theme.palette.text.primary }}>{displayName.charAt(0).toUpperCase()}</Avatar>
 						<Box sx={{ display: { xs: "none", sm: "block" } }}>
 							<Typography variant="body1">{displayName}</Typography>
 							<Typography variant="body2" color="text.secondary">
