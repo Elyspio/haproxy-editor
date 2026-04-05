@@ -1,6 +1,8 @@
 import type { HaproxyResourceSnapshot } from "@modules/config/config.types";
 import type {
 	DashboardAlert,
+	ClusterDashboardSnapshot,
+	ClusterNodeDashboardSnapshot,
 	DashboardKpi,
 	DashboardSearchResult,
 	DashboardSelection,
@@ -117,6 +119,38 @@ function ensureBackends(value: unknown): RuntimeBackendStatus[] {
 	});
 }
 
+function ensureClusterNodes(value: unknown): ClusterNodeDashboardSnapshot[] {
+	if (!Array.isArray(value)) {
+		return [];
+	}
+
+	return value.map((entry) => {
+		const item = asRecord(entry);
+		return {
+			nodeId: asStringOrFallback(item.nodeId),
+			displayName: asStringOrFallback(item.displayName, asStringOrFallback(item.nodeId)),
+			enabled: item.enabled !== false,
+			runtimeStatus: asEnumString(item.runtimeStatus),
+			syncStatus: asEnumString(item.syncStatus, "pending"),
+			lastAttemptAt: asString(item.lastAttemptAt),
+			lastSuccessAt: asString(item.lastSuccessAt),
+			lastError: asString(item.lastError),
+		};
+	});
+}
+
+function ensureCluster(value: unknown): ClusterDashboardSnapshot {
+	const item = asRecord(value);
+	return {
+		clusterId: asStringOrFallback(item.clusterId),
+		currentRevision: asNumber(item.currentRevision),
+		status: asEnumString(item.status),
+		totalNodes: asNumber(item.totalNodes),
+		syncedNodes: asNumber(item.syncedNodes),
+		nodes: ensureClusterNodes(item.nodes),
+	};
+}
+
 export function createEmptyDashboardSnapshot(): DashboardSnapshot {
 	return {
 		summary: {
@@ -128,6 +162,14 @@ export function createEmptyDashboardSnapshot(): DashboardSnapshot {
 		},
 		alerts: [],
 		backends: [],
+		cluster: {
+			clusterId: "",
+			currentRevision: 0,
+			status: "unknown",
+			totalNodes: 0,
+			syncedNodes: 0,
+			nodes: [],
+		},
 	};
 }
 
@@ -145,6 +187,7 @@ export function normalizeDashboardSnapshot(snapshot: unknown): DashboardSnapshot
 		},
 		alerts: ensureAlerts(raw.alerts),
 		backends: ensureBackends(raw.backends),
+		cluster: ensureCluster(raw.cluster),
 	};
 }
 

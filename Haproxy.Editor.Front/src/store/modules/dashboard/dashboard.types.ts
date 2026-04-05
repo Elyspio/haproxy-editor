@@ -56,6 +56,27 @@ export type DashboardSnapshot = {
 	summary: DashboardSummary;
 	alerts: DashboardAlert[];
 	backends: RuntimeBackendStatus[];
+	cluster: ClusterDashboardSnapshot;
+};
+
+export type ClusterNodeDashboardSnapshot = {
+	nodeId: string;
+	displayName: string;
+	enabled: boolean;
+	runtimeStatus: string;
+	syncStatus: string;
+	lastAttemptAt: string | null;
+	lastSuccessAt: string | null;
+	lastError: string | null;
+};
+
+export type ClusterDashboardSnapshot = {
+	clusterId: string;
+	currentRevision: number;
+	status: string;
+	totalNodes: number;
+	syncedNodes: number;
+	nodes: ClusterNodeDashboardSnapshot[];
 };
 
 export type DashboardSelection = {

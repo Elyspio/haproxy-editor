@@ -1,13 +1,19 @@
 using Coexya.Utils.Telemetry.Tracing.Builder;
 using Elyspio.Utils.Telemetry.Technical.Options;
+using Hangfire;
+using Hangfire.Mongo;
+using Hangfire.Mongo.Migration.Strategies.Backup;
+using Hangfire.Mongo.Migration.Strategies;
 using Haproxy.Editor.Abstractions.Configurations;
 using Haproxy.Editor.Abstractions.Extensions;
 using Haproxy.Editor.Adapters.Haproxy;
+using Haproxy.Editor.Adapters.Mongo.Injections;
 using Haproxy.Editor.Core;
 using Haproxy.Editor.Endpoints;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using MongoDB.Driver;
 using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -47,6 +53,37 @@ builder.Services.AddLogging(x =>
 
 builder.AddModule<CoreModule>();
 builder.AddModule<HaproxyAdapterModule>();
+builder.AddModule<MongoAdapterModule>();
+
+var appConfig = builder.Configuration.GetRequiredSection(AppConfig.Section).Get<AppConfig>()
+	?? throw new InvalidOperationException("App configuration section is missing.");
+
+builder.Services.AddHangfire((_, configuration) =>
+{
+	var mongoClient = new MongoClient(appConfig.MongoDb.ConnectionString);
+	configuration
+		.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+		.UseSimpleAssemblyNameTypeSerializer()
+		.UseRecommendedSerializerSettings()
+		.UseMongoStorage(mongoClient, appConfig.MongoDb.DatabaseName, new MongoStorageOptions
+		{
+			MigrationOptions = new MongoMigrationOptions
+			{
+				MigrationStrategy = new MigrateMongoMigrationStrategy(),
+				BackupStrategy = new CollectionMongoBackupStrategy(),
+			},
+			CheckConnection = true,
+			CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.Poll,
+			Prefix = "hangfire",
+			QueuePollInterval = TimeSpan.FromSeconds(Math.Max(1, appConfig.Cluster.SyncLoopIntervalSeconds)),
+			SlidingInvisibilityTimeout = TimeSpan.FromMinutes(30),
+		});
+});
+
+builder.Services.AddHangfireServer(options =>
+{
+	options.ServerName = $"{Environment.MachineName}:{Environment.ProcessId}:{Guid.NewGuid():N}";
+});
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -134,6 +171,7 @@ if (app.Environment.IsDevelopment())
 	app.UseSwagger();
 	app.UseSwaggerUI();
 	app.UseCors();
+	app.UseHangfireDashboard("/hangfire");
 }
 
 app.UseAuthentication();

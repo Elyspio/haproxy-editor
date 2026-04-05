@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { alpha, useTheme } from "@mui/material/styles";
 import { Box, Chip, LinearProgress, List, ListItem, ListItemText, Paper, Stack, Typography } from "@mui/material";
 import { useAppSelector } from "@store/utils/utils.selectors";
-import type { DashboardKpi, RuntimeBackendStatus } from "@modules/dashboard/dashboard.types";
+import type { ClusterNodeDashboardSnapshot, DashboardKpi, RuntimeBackendStatus } from "@modules/dashboard/dashboard.types";
 
 function formatBytes(bytes: number): string {
 	if (bytes === 0) return "0 B";
@@ -274,6 +274,89 @@ function BackendBreakdown({ backends }: Readonly<{ backends: RuntimeBackendStatu
 	);
 }
 
+function ClusterOverview() {
+	const theme = useTheme();
+	const cluster = useAppSelector((state) => state.dashboard.snapshot.cluster);
+	const progress = cluster.totalNodes > 0 ? (cluster.syncedNodes / cluster.totalNodes) * 100 : 0;
+
+	return (
+		<Paper sx={{ p: 2, display: "flex", flexDirection: "column", gap: 2, minWidth: 280, flex: 1 }}>
+			<Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1}>
+				<Box>
+					<Typography variant="subtitle2" sx={{ opacity: 0.8 }}>
+						Cluster
+					</Typography>
+					<Typography sx={{ fontSize: 28, lineHeight: 1.1, fontWeight: 700 }}>r{cluster.currentRevision || 0}</Typography>
+				</Box>
+				<Chip size="small" label={cluster.status} variant="outlined" sx={{ textTransform: "uppercase", fontWeight: 700 }} />
+			</Stack>
+			<Box>
+				<Stack direction="row" justifyContent="space-between" sx={{ mb: 0.75 }}>
+					<Typography variant="body2" sx={{ fontSize: "0.75rem" }}>
+						{cluster.syncedNodes}/{cluster.totalNodes} nodes synced
+					</Typography>
+					<Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+						{cluster.clusterId || "cluster"}
+					</Typography>
+				</Stack>
+				<LinearProgress
+					variant="determinate"
+					value={progress}
+					sx={{
+						height: 6,
+						borderRadius: 3,
+						backgroundColor: alpha(theme.palette.text.secondary, 0.1),
+						"& .MuiLinearProgress-bar": {
+							borderRadius: 3,
+						},
+					}}
+				/>
+			</Box>
+			<Stack spacing={1}>
+				{cluster.nodes.map((node) => (
+					<ClusterNodeRow key={node.nodeId} node={node} />
+				))}
+			</Stack>
+		</Paper>
+	);
+}
+
+function ClusterNodeRow({ node }: Readonly<{ node: ClusterNodeDashboardSnapshot }>) {
+	const theme = useTheme();
+	const tone =
+		node.syncStatus === "failed" || node.runtimeStatus === "down"
+			? theme.palette.error.main
+			: node.syncStatus === "syncing" || node.syncStatus === "pending" || node.runtimeStatus === "unknown"
+				? theme.palette.warning.main
+				: theme.palette.success.main;
+
+	return (
+		<Box
+			sx={{
+				borderRadius: 2,
+				border: `1px solid ${alpha(tone, 0.24)}`,
+				backgroundColor: alpha(tone, 0.05),
+				p: 1.25,
+			}}
+		>
+			<Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
+				<Box sx={{ minWidth: 0 }}>
+					<Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>
+						{node.displayName}
+					</Typography>
+					<Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.7rem" }} noWrap>
+						{node.lastError ?? `${node.syncStatus} · runtime ${node.runtimeStatus}`}
+					</Typography>
+				</Box>
+				<Stack direction="row" spacing={0.75}>
+					<Chip size="small" label={node.syncStatus} sx={{ height: 22, fontWeight: 700, fontSize: "0.65rem" }} />
+					<Chip size="small" label={node.runtimeStatus} sx={{ height: 22, fontWeight: 700, fontSize: "0.65rem" }} />
+				</Stack>
+			</Stack>
+		</Box>
+	);
+}
+
 function ActiveAlerts() {
 	const theme = useTheme();
 	const alerts = useAppSelector((state) => state.dashboard.snapshot.alerts);
@@ -365,6 +448,7 @@ export function Summary() {
 
 			{/* Traffic + Health Row */}
 			<Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", "& > *": { minWidth: 260 } }}>
+				<ClusterOverview />
 				<TrafficOverview backends={backends} />
 				<ServerHealth backends={backends} />
 			</Box>

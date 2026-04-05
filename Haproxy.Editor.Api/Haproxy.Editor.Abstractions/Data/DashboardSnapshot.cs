@@ -40,6 +40,17 @@ public enum DashboardResourceType
 	Runtime,
 	Frontend,
 	Backend,
+	Cluster,
+	Node,
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum ClusterSyncStatus
+{
+	Pending,
+	Syncing,
+	Synced,
+	Failed,
 }
 
 public sealed record DashboardSnapshot
@@ -49,6 +60,8 @@ public sealed record DashboardSnapshot
 	public List<DashboardAlert> Alerts { get; init; } = [];
 
 	public List<RuntimeBackendStatus> Backends { get; init; } = [];
+
+	public ClusterDashboardSnapshot Cluster { get; init; } = new();
 }
 
 public sealed record DashboardSummary
@@ -132,4 +145,38 @@ public sealed record RuntimeServerStatus
 	public int CurrentSessions { get; init; }
 
 	public int SessionRate { get; init; }
+}
+
+public sealed record ClusterDashboardSnapshot
+{
+	public string ClusterId { get; init; } = string.Empty;
+
+	public long CurrentRevision { get; init; }
+
+	public RuntimeStatus Status { get; init; } = RuntimeStatus.Unknown;
+
+	public int TotalNodes { get; init; }
+
+	public int SyncedNodes { get; init; }
+
+	public List<ClusterNodeDashboardSnapshot> Nodes { get; init; } = [];
+}
+
+public sealed record ClusterNodeDashboardSnapshot
+{
+	public string NodeId { get; init; } = string.Empty;
+
+	public string DisplayName { get; init; } = string.Empty;
+
+	public bool Enabled { get; init; } = true;
+
+	public RuntimeStatus RuntimeStatus { get; init; } = RuntimeStatus.Unknown;
+
+	public ClusterSyncStatus SyncStatus { get; init; } = ClusterSyncStatus.Pending;
+
+	public DateTimeOffset? LastAttemptAt { get; init; }
+
+	public DateTimeOffset? LastSuccessAt { get; init; }
+
+	public string? LastError { get; init; }
 }

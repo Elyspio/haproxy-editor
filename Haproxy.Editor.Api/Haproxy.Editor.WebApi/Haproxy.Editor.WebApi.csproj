@@ -8,6 +8,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Hangfire.AspNetCore" Version="1.8.23" />
+		<PackageReference Include="Hangfire.Mongo" Version="1.14.0" />
+		<PackageReference Include="MongoDB.Driver" Version="3.7.1" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.5" />
 		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.5" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.5" />
@@ -15,6 +18,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Haproxy.Editor.Abstractions\Haproxy.Editor.Abstractions.csproj"/>
+		<ProjectReference Include="..\Haproxy.Editor.Adapters.Mongo\Haproxy.Editor.Adapters.Mongo.csproj"/>
 		<ProjectReference Include="..\Haproxy.Editor.Adapters.Haproxy\Haproxy.Editor.Adapters.Haproxy.csproj"/>
 		<ProjectReference Include="..\Haproxy.Editor.Core\Haproxy.Editor.Core.csproj"/>
 	</ItemGroup>

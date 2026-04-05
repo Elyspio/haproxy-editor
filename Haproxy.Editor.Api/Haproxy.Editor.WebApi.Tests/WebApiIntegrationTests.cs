@@ -23,10 +23,15 @@ namespace Haproxy.Editor.WebApi.Tests;
 
 public class WebApiIntegrationTests : IAsyncLifetime
 {
-	private readonly TestcontainersContainer _container = new TestcontainersBuilder<TestcontainersContainer>()
+	private readonly TestcontainersContainer _wireMockContainer = new TestcontainersBuilder<TestcontainersContainer>()
 		.WithImage("wiremock/wiremock:3.9.1")
 		.WithPortBinding(8080, true)
 		.WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(8080))
+		.Build();
+	private readonly TestcontainersContainer _mongoContainer = new TestcontainersBuilder<TestcontainersContainer>()
+		.WithImage("mongo:8.0")
+		.WithPortBinding(27017, true)
+		.WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(27017))
 		.Build();
 
 	private HttpClient _adminClient = null!;
@@ -36,8 +41,9 @@ public class WebApiIntegrationTests : IAsyncLifetime
 	{
 		try
 		{
-			await _container.StartAsync();
-			_adminClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{_container.GetMappedPublicPort(8080)}/") };
+			await _wireMockContainer.StartAsync();
+			await _mongoContainer.StartAsync();
+			_adminClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{_wireMockContainer.GetMappedPublicPort(8080)}/") };
 			await ConfigureMappings();
 		}
 		catch (Exception ex)
@@ -49,7 +55,8 @@ public class WebApiIntegrationTests : IAsyncLifetime
 	public async Task DisposeAsync()
 	{
 		_adminClient?.Dispose();
-		await _container.DisposeAsync();
+		await _wireMockContainer.DisposeAsync();
+		await _mongoContainer.DisposeAsync();
 	}
 
 	[Fact]
@@ -65,7 +72,7 @@ public class WebApiIntegrationTests : IAsyncLifetime
 			throw new InvalidOperationException("Testcontainer startup failed for a reason other than Docker availability.", _containerStartupException);
 		}
 
-		await using var factory = new TestWebApplicationFactory(_container.GetMappedPublicPort(8080));
+		await using var factory = new TestWebApplicationFactory(_wireMockContainer.GetMappedPublicPort(8080), _mongoContainer.GetMappedPublicPort(27017));
 		using var client = factory.CreateClient();
 
 		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("TestScheme");
@@ -82,14 +89,19 @@ public class WebApiIntegrationTests : IAsyncLifetime
 		var validateResponse = await client.PostAsJsonAsync("/haproxy/config/validate", snapshot);
 		validateResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
 
+		var dashboard = await WaitForHealthyDashboard(client);
+
 		var dashboardResponse = await client.GetAsync("/haproxy/dashboard");
 		dashboardResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-		var dashboard = await dashboardResponse.Content.ReadFromJsonAsync<DashboardSnapshot>();
+		dashboard = await dashboardResponse.Content.ReadFromJsonAsync<DashboardSnapshot>();
 		dashboard.ShouldNotBeNull();
-		dashboard.Summary.RuntimeStatus.ShouldBe(RuntimeStatus.Up);
+		dashboard.Summary.RuntimeStatus.ShouldBe(RuntimeStatus.Healthy);
+		dashboard.Cluster.TotalNodes.ShouldBe(2);
+		dashboard.Cluster.SyncedNodes.ShouldBe(2);
 		dashboard.Backends.Count.ShouldBe(1);
 		dashboard.Backends[0].HealthyServers.ShouldBe(1);
+		dashboard.Backends[0].DownServers.ShouldBe(0);
 	}
 
 	private static bool IsDockerUnavailable(Exception exception)
@@ -106,6 +118,7 @@ public class WebApiIntegrationTests : IAsyncLifetime
 		await AddJsonMapping("GET", "/v3/services/haproxy/configuration/version", new { version = 1L });
 		await AddJsonMapping("GET", "/v3/services/haproxy/configuration/version", new { version = 1L }, new Dictionary<string, string> { ["transaction_id"] = "tx-1" });
 		await AddJsonMapping("POST", "/v3/services/haproxy/transactions", new { id = "tx-1", version = 1L, status = "in_progress" }, new Dictionary<string, string> { ["version"] = "1" });
+		await AddJsonMapping("PUT", "/v3/services/haproxy/transactions/tx-1", new { id = "tx-1", version = 2L, status = "success" });
 		await AddJsonMapping("DELETE", "/v3/services/haproxy/transactions/tx-1", null, statusCode: 204);
 		await AddJsonMapping("GET", "/v3/health", new { haproxy = "up" });
 		await AddJsonMapping("GET", "/v3/services/haproxy/stats/native", new
@@ -176,6 +189,24 @@ public class WebApiIntegrationTests : IAsyncLifetime
 		});
 	}
 
+	private static async Task<DashboardSnapshot> WaitForHealthyDashboard(HttpClient client)
+	{
+		for (var attempt = 0; attempt < 20; attempt++)
+		{
+			var response = await client.GetAsync("/haproxy/dashboard");
+			response.StatusCode.ShouldBe(HttpStatusCode.OK);
+			var dashboard = await response.Content.ReadFromJsonAsync<DashboardSnapshot>();
+			if (dashboard is not null && dashboard.Cluster.SyncedNodes == dashboard.Cluster.TotalNodes && dashboard.Cluster.TotalNodes > 0)
+			{
+				return dashboard;
+			}
+
+			await Task.Delay(200);
+		}
+
+		throw new TimeoutException("Cluster dashboard did not reach a fully synced state in time.");
+	}
+
 	private async Task AddJsonMapping(
 		string method,
 		string path,
@@ -236,10 +267,12 @@ public class WebApiIntegrationTests : IAsyncLifetime
 	private sealed class TestWebApplicationFactory : WebApplicationFactory<Program>
 	{
 		private readonly int _wireMockPort;
+		private readonly int _mongoPort;
 
-		public TestWebApplicationFactory(int wireMockPort)
+		public TestWebApplicationFactory(int wireMockPort, int mongoPort)
 		{
 			_wireMockPort = wireMockPort;
+			_mongoPort = mongoPort;
 		}
 
 		protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -248,9 +281,22 @@ public class WebApiIntegrationTests : IAsyncLifetime
 			{
 				configBuilder.AddInMemoryCollection(new Dictionary<string, string?>
 				{
-					["App:DataPlaneApi:BaseUrl"] = $"http://localhost:{_wireMockPort}",
-					["App:DataPlaneApi:IgnoreTlsErrors"] = "true",
-					["App:DataPlaneApi:TimeoutSeconds"] = "30",
+					["App:MongoDb:ConnectionString"] = $"mongodb://localhost:{_mongoPort}/haproxy-editor-test",
+					["App:MongoDb:DatabaseName"] = "haproxy-editor-test",
+					["App:Cluster:ClusterId"] = "test-cluster",
+					["App:Cluster:ValidationNodeId"] = "node-1",
+					["App:Cluster:SyncLoopIntervalSeconds"] = "1",
+					["App:Cluster:RetryDelaySeconds"] = "1",
+					["App:Cluster:Nodes:0:NodeId"] = "node-1",
+					["App:Cluster:Nodes:0:DisplayName"] = "Node 1",
+					["App:Cluster:Nodes:0:BaseUrl"] = $"http://localhost:{_wireMockPort}/v3/",
+					["App:Cluster:Nodes:0:IgnoreTlsErrors"] = "true",
+					["App:Cluster:Nodes:0:Enabled"] = "true",
+					["App:Cluster:Nodes:1:NodeId"] = "node-2",
+					["App:Cluster:Nodes:1:DisplayName"] = "Node 2",
+					["App:Cluster:Nodes:1:BaseUrl"] = $"http://localhost:{_wireMockPort}/v3/",
+					["App:Cluster:Nodes:1:IgnoreTlsErrors"] = "true",
+					["App:Cluster:Nodes:1:Enabled"] = "true",
 					["Oidc:Audience"] = "haproxy-editor",
 					["Oidc:Issuer"] = "https://issuer.example.test",
 				});

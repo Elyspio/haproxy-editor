@@ -11,18 +11,80 @@ public class AppConfig
 	public const string Section = "App";
 
 	/// <summary>
-	///     Data Plane API connectivity settings.
+	///     MongoDB persistence settings.
 	/// </summary>
-	public required DataPlaneApiConfig DataPlaneApi { get; init; }
+	public required MongoDbConfig MongoDb { get; init; }
+
+	/// <summary>
+	///     Cluster topology and synchronization settings.
+	/// </summary>
+	public required HaproxyClusterConfig Cluster { get; init; }
 }
 
 /// <summary>
-///     Represents Data Plane API connectivity settings.
+///     Represents MongoDB connectivity settings.
 /// </summary>
-public class DataPlaneApiConfig
+public class MongoDbConfig
 {
 	/// <summary>
-	///     The Data Plane API base URL.
+	///     MongoDB connection string.
+	/// </summary>
+	public required string ConnectionString { get; init; }
+
+	/// <summary>
+	///     Database name used by the application.
+	/// </summary>
+	public required string DatabaseName { get; init; }
+}
+
+/// <summary>
+///     Represents HAProxy cluster settings.
+/// </summary>
+public class HaproxyClusterConfig
+{
+	/// <summary>
+	///     Logical cluster identifier.
+	/// </summary>
+	public required string ClusterId { get; init; }
+
+	/// <summary>
+	///     Node used for validation and bootstrap.
+	/// </summary>
+	public required string ValidationNodeId { get; init; }
+
+	/// <summary>
+	///     Polling interval, in seconds, for background synchronization.
+	/// </summary>
+	public int SyncLoopIntervalSeconds { get; init; } = 5;
+
+	/// <summary>
+	///     Base retry delay, in seconds.
+	/// </summary>
+	public int RetryDelaySeconds { get; init; } = 5;
+
+	/// <summary>
+	///     Known HAProxy Data Plane nodes for the cluster.
+	/// </summary>
+	public List<HaproxyClusterNodeConfig> Nodes { get; init; } = [];
+}
+
+/// <summary>
+///     Represents a single HAProxy Data Plane node in the cluster.
+/// </summary>
+public class HaproxyClusterNodeConfig
+{
+	/// <summary>
+	///     Stable logical node identifier.
+	/// </summary>
+	public required string NodeId { get; init; }
+
+	/// <summary>
+	///     Display name shown in operational views.
+	/// </summary>
+	public string? DisplayName { get; init; }
+
+	/// <summary>
+	///     Data Plane API base URL.
 	/// </summary>
 	public required string BaseUrl { get; init; }
 
@@ -50,6 +112,11 @@ public class DataPlaneApiConfig
 	///     Request timeout, in seconds.
 	/// </summary>
 	public int TimeoutSeconds { get; init; } = 30;
+
+	/// <summary>
+	///     Whether this node should participate in synchronization.
+	/// </summary>
+	public bool Enabled { get; init; } = true;
 }
 
 /// <summary>
