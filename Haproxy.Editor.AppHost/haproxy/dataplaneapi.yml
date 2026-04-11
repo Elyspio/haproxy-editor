@@ -11,6 +11,10 @@ dataplaneapi:
   userlist:
     userlist: dataplaneapi
     userlist_file: ""
+  user:
+  - name: admin
+    insecure: true
+    password: 651zdaz651d65za465d8912302139
 haproxy:
   config_file: /usr/local/etc/haproxy/haproxy.cfg
   haproxy_bin: /usr/local/sbin/haproxy

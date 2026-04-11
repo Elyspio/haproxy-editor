@@ -151,6 +151,7 @@ function ensureBackends(value: unknown): HaproxyBackendResource[] {
 			name: asStringOrFallback(item.name),
 			mode: asString(item.mode),
 			balance: asString(item.balance),
+			advCheck: asString(item.advCheck),
 			servers: ensureServers(item.servers),
 		};
 	});

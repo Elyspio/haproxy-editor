@@ -38,7 +38,7 @@ function createTestSnapshot(overrides?: Partial<HaproxyResourceSnapshot>): Hapro
 				backendSwitchingRules: [],
 			},
 		],
-		backends: [{ name: "be_api", mode: "http", balance: "roundrobin", servers: [{ name: "srv_1", address: "10.0.0.1", port: 8080, check: "enabled" }] }],
+		backends: [{ name: "be_api", mode: "http", balance: "roundrobin", advCheck: null, servers: [{ name: "srv_1", address: "10.0.0.1", port: 8080, check: "enabled" }] }],
 		summary: { frontendCount: 1, backendCount: 1, serverCount: 1 },
 		...overrides,
 	};
@@ -136,6 +136,7 @@ describe("Quick Map logic", () => {
 				name: newBackendName,
 				mode: "http",
 				balance: "roundrobin",
+				advCheck: null,
 				servers: [{ name: `${newBackendName}_srv_1`, address: "10.0.0.2", port: 3000, check: "enabled" }],
 			});
 

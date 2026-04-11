@@ -3,7 +3,38 @@ import { Box, Button, Chip, Divider, MenuItem, Stack, TextField, Tooltip, Typogr
 import { alpha, useTheme } from "@mui/material/styles";
 import type { HaproxyFrontendResource, HaproxyResourceSnapshot } from "@modules/config/config.types";
 import type { DashboardSelection } from "@modules/dashboard/dashboard.types";
-import { Panel, SectionHeader } from "./ManagementWorkspace.shared";
+import { ConfigPreview, Panel, SectionHeader } from "./ManagementWorkspace.shared";
+
+function buildFrontendPreview(frontend: HaproxyFrontendResource): string {
+	const lines = [`frontend ${frontend.name || "frontend_name"}`];
+
+	if (frontend.mode) {
+		lines.push(`    mode ${frontend.mode}`);
+	}
+
+	for (const bind of frontend.binds) {
+		const address = bind.address?.trim() || "*";
+		const port = bind.port ?? 80;
+		lines.push(`    bind ${address}:${port}`);
+	}
+
+	for (const acl of frontend.acls) {
+		if (acl.criterion && acl.value) {
+			lines.push(`    acl ${acl.name} ${acl.criterion} ${acl.value}`);
+		}
+	}
+
+	for (const rule of frontend.backendSwitchingRules) {
+		const cond = rule.cond && rule.condTest ? ` ${rule.cond} ${rule.condTest}` : "";
+		lines.push(`    use_backend ${rule.backendName}${cond}`);
+	}
+
+	if (frontend.defaultBackend) {
+		lines.push(`    default_backend ${frontend.defaultBackend}`);
+	}
+
+	return lines.join("\n");
+}
 
 type FrontendManagementSectionProps = {
 	snapshot: HaproxyResourceSnapshot;
@@ -133,6 +164,8 @@ export function FrontendManagementSection({
 								</TextField>
 							</Stack>
 
+							<ConfigPreview config={buildFrontendPreview(frontendContext)} />
+
 							<Divider />
 							<Box>
 								<Typography variant="subtitle2" sx={{ mb: 1.5 }}>
@@ -203,18 +236,6 @@ export function FrontendManagementSection({
 							<Stack spacing={0} divider={<Divider sx={{ opacity: 0.4 }} />}>
 								{frontendContext.binds.map((bind, index) => (
 									<Stack key={bind.name || index} direction={{ xs: "column", md: "row" }} spacing={1.25} sx={{ py: 1.5 }}>
-										<TextField
-											size="small"
-											label="Name"
-											fullWidth
-											value={bind.name}
-											onChange={(event) =>
-												updateSnapshot((draft) => {
-													const item = draft.frontends.find((frontend) => frontend.name === frontendContext.name)?.binds[index];
-													if (item) item.name = event.target.value;
-												})
-											}
-										/>
 										<TextField
 											size="small"
 											label="Address"

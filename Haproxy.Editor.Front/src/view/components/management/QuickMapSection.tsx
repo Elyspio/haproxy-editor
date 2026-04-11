@@ -26,7 +26,8 @@ type QuickMapDraft = {
 		name: string;
 		mode: string;
 		balance: string;
-		servers: NewServer[];
+		advCheck: string;
+		servers: (NewServer & { check: string })[];
 	};
 	matchType: AclPresetId;
 	matchPrimary: string;
@@ -47,7 +48,8 @@ function createInitialDraft(snapshot: HaproxyResourceSnapshot, frontendContext: 
 			name: `backend_${backendIndex}`,
 			mode: "http",
 			balance: "roundrobin",
-			servers: [{ name: `backend_${backendIndex}_srv_1`, address: "10.0.0.1", port: 8080 }],
+			advCheck: "",
+			servers: [{ name: `backend_${backendIndex}_srv_1`, address: "10.0.0.1", port: 8080, check: "enabled" }],
 		},
 		matchType: "host",
 		matchPrimary: "",
@@ -117,11 +119,12 @@ export function QuickMapSection({ snapshot, frontendContext, updateSnapshot, set
 					name: draft.newBackend.name,
 					mode: draft.newBackend.mode || null,
 					balance: draft.newBackend.balance || null,
+					advCheck: draft.newBackend.advCheck || null,
 					servers: draft.newBackend.servers.map((s) => ({
 						name: s.name,
 						address: s.address || null,
 						port: s.port,
-						check: "enabled",
+						check: s.check || null,
 					})),
 				});
 			}
@@ -158,6 +161,7 @@ export function QuickMapSection({ snapshot, frontendContext, updateSnapshot, set
 			name: `${draft.newBackend.name}_srv_${servers.length + 1}`,
 			address: "10.0.0.1",
 			port: 8080,
+			check: "enabled",
 		});
 		updateDraft({ newBackend: { ...draft.newBackend, servers } });
 	};
@@ -270,6 +274,18 @@ export function QuickMapSection({ snapshot, frontendContext, updateSnapshot, set
 												value={draft.newBackend.balance}
 												onChange={(e) => updateDraft({ newBackend: { ...draft.newBackend, balance: e.target.value } })}
 											/>
+											<TextField
+												size="small"
+												select
+												label="Health Check"
+												fullWidth
+												value={draft.newBackend.advCheck}
+												onChange={(e) => updateDraft({ newBackend: { ...draft.newBackend, advCheck: e.target.value } })}
+											>
+												<MenuItem value="">None</MenuItem>
+												<MenuItem value="tcp-check">TCP check</MenuItem>
+												<MenuItem value="httpchk">HTTP check</MenuItem>
+											</TextField>
 										</Stack>
 										<SectionHeader
 											title="Servers"
@@ -303,6 +319,21 @@ export function QuickMapSection({ snapshot, frontendContext, updateSnapshot, set
 													onChange={(e) => updateServer(index, { port: e.target.value === "" ? null : Number(e.target.value) })}
 													sx={{ flex: 1 }}
 												/>
+												<TextField
+													size="small"
+													select
+													label="Check"
+													value={server.check}
+													onChange={(e) => {
+														const servers = [...draft.newBackend.servers];
+														servers[index] = { ...servers[index], check: e.target.value };
+														updateDraft({ newBackend: { ...draft.newBackend, servers } });
+													}}
+													sx={{ flex: 1.2 }}
+												>
+													<MenuItem value="enabled">Enabled</MenuItem>
+													<MenuItem value="disabled">Disabled</MenuItem>
+												</TextField>
 												<IconButton size="small" color="error" onClick={() => removeServer(index)}>
 													<DeleteOutline fontSize="small" />
 												</IconButton>

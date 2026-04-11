@@ -9,7 +9,7 @@ builder.Services.AddLogging(x => x.AddSimpleConsole(xx => xx.SingleLine = true) 
 var haproxyConfigPath = Path.Combine(builder.AppHostDirectory, "haproxy");
 
 var haproxy = builder.AddContainer("haproxy", "haproxytech/haproxy-alpine", "s6-latest")
-	.WithHttpEndpoint(port: 5555, targetPort: 5555, isProxied: false)
+	.WithHttpEndpoint(port: 5556, targetPort: 5555, isProxied: false)
 	.WithBindMount(haproxyConfigPath, "/usr/local/etc/haproxy", isReadOnly: false);
 
 var api = builder.AddProject<Haproxy_Editor_WebApi>("api")

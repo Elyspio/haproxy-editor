@@ -13,7 +13,7 @@ public class HaproxyAdapterModule : IModule
 	/// <inheritdoc />
 	public void Load(IServiceCollection services, IConfiguration configuration)
 	{
-		services.AddHttpClient<HaproxyClient>((serviceProvider, client) =>
+		services.AddHttpClient("HaproxyDataPlane", (serviceProvider, client) =>
 			{
 				var options = serviceProvider.GetRequiredService<IOptionsMonitor<AppConfig>>().CurrentValue.DataPlaneApi;
 
@@ -41,5 +41,14 @@ public class HaproxyAdapterModule : IModule
 						: null
 				};
 			});
+
+		services.AddTransient<HaproxyClient>(serviceProvider =>
+		{
+			var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
+			return new HaproxyClient(httpClientFactory.CreateClient("HaproxyDataPlane"))
+			{
+				ReadResponseAsString = true,
+			};
+		});
 	}
 }
