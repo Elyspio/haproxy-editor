@@ -47,6 +47,7 @@ export type HaproxyBackendResource = {
 	name: string;
 	mode: string | null;
 	balance: string | null;
+	advCheck: string | null;
 	servers: HaproxyServerResource[];
 };
 

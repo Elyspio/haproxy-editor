@@ -23,6 +23,7 @@ describe("convertSnapshotToFlow", () => {
 					name: "be_main",
 					mode: "http",
 					balance: null,
+					advCheck: null,
 					servers: [{ name: "app_1", address: "10.0.0.10", port: 8080, check: "enabled" }],
 				},
 			],

@@ -18,19 +18,41 @@ public static class HaproxyEndpoints
 		return app;
 	}
 
-	private static Task<HaproxyResourceSnapshot> GetConfig(IHaproxyService haproxyService)
+	private static async Task<IResult> GetConfig(IHaproxyService haproxyService)
 	{
-		return haproxyService.GetConfig();
+		try
+		{
+			return Results.Ok(await haproxyService.GetConfig());
+		}
+		catch (InvalidOperationException exception)
+		{
+			return Results.Problem(title: "Failed to load HAProxy configuration", detail: exception.Message, statusCode: StatusCodes.Status502BadGateway);
+		}
 	}
 
-	private static Task<DashboardSnapshot> GetDashboard(IHaproxyService haproxyService)
+	private static async Task<IResult> GetDashboard(IHaproxyService haproxyService)
 	{
-		return haproxyService.GetDashboardSnapshot();
+		try
+		{
+			return Results.Ok(await haproxyService.GetDashboardSnapshot());
+		}
+		catch (InvalidOperationException exception)
+		{
+			return Results.Problem(title: "Failed to load HAProxy dashboard", detail: exception.Message, statusCode: StatusCodes.Status502BadGateway);
+		}
 	}
 
-	private static Task SetConfig(HaproxyResourceSnapshot config, IHaproxyService haproxyService)
+	private static async Task<IResult> SetConfig(HaproxyResourceSnapshot config, IHaproxyService haproxyService)
 	{
-		return haproxyService.SaveConfig(config);
+		try
+		{
+			await haproxyService.SaveConfig(config);
+			return Results.Ok();
+		}
+		catch (InvalidOperationException exception)
+		{
+			return Results.Problem(title: "Failed to save HAProxy configuration", detail: exception.Message, statusCode: StatusCodes.Status502BadGateway);
+		}
 	}
 
 	private static async Task<IResult> ValidateConfig(HaproxyResourceSnapshot config, IHaproxyService haproxyService)

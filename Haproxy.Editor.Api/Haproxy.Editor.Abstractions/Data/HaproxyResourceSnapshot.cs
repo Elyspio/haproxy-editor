@@ -50,6 +50,8 @@ public sealed record HaproxyBackendResource
 
 	public string? Balance { get; init; }
 
+	public string? AdvCheck { get; init; }
+
 	public List<HaproxyServerResource> Servers { get; init; } = [];
 }
 

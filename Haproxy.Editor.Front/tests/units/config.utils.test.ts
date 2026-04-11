@@ -21,6 +21,7 @@ describe("config.utils", () => {
 					name: "be_main",
 					mode: "http",
 					balance: "roundrobin",
+					advCheck: "tcp-check",
 					servers: [
 						{ name: "app_1", address: "10.0.0.10", port: 8080, check: "enabled" },
 						{ name: "app_2", address: "10.0.0.11", port: 8080, check: null },
@@ -32,6 +33,7 @@ describe("config.utils", () => {
 		expect(snapshot.version).toBe(12);
 		expect(snapshot.global.daemon).toBe(true);
 		expect(snapshot.frontends[0]?.backendSwitchingRules[0]?.backendName).toBe("be_main");
+		expect(snapshot.backends[0]?.advCheck).toBe("tcp-check");
 		expect(snapshot.summary).toEqual({
 			frontendCount: 1,
 			backendCount: 1,
@@ -54,6 +56,7 @@ describe("config.utils", () => {
 				name: "be_main",
 				mode: "http",
 				balance: null,
+				advCheck: null,
 				servers: [{ name: "app_1", address: "10.0.0.10", port: 8080, check: null }],
 			});
 		});

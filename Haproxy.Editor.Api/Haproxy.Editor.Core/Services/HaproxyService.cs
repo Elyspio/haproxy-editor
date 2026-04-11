@@ -2,6 +2,8 @@ using Elyspio.Utils.Telemetry.Tracing.Elements;
 using Haproxy.Editor.Abstractions.Data;
 using Haproxy.Editor.Abstractions.Interfaces.Services;
 using Microsoft.Extensions.Logging;
+using System.Reflection;
+using System.Runtime.Serialization;
 using Generated = Haproxy.Editor.Adapters.Haproxy;
 
 namespace Haproxy.Editor.Core.Services;
@@ -18,16 +20,16 @@ public class HaproxyService : TracingService, IHaproxyService
 	public Task<HaproxyResourceSnapshot> GetConfig()
 	{
 		using var _ = LogService();
-		return LoadSnapshot();
+		return ExecuteDataPlaneCall("loading HAProxy configuration", () => LoadSnapshot());
 	}
 
 	public async Task<DashboardSnapshot> GetDashboardSnapshot()
 	{
 		using var _ = LogService();
 
-		var configTask = LoadSnapshot();
-		var healthTask = _client.GetHealthAsync();
-		var statsTask = _client.GetStatsAsync();
+		var configTask = ExecuteDataPlaneCall("loading HAProxy configuration", () => LoadSnapshot());
+		var healthTask = ExecuteDataPlaneCall("loading HAProxy health", () => _client.GetHealthAsync());
+		var statsTask = ExecuteDataPlaneCall("loading HAProxy stats", () => _client.GetStatsAsync());
 
 		await Task.WhenAll(configTask, healthTask, statsTask);
 
@@ -55,9 +57,14 @@ public class HaproxyService : TracingService, IHaproxyService
 
 		try
 		{
-			var baseline = await LoadSnapshot(transactionId);
+			var baseline = await ExecuteDataPlaneCall("loading HAProxy configuration baseline", () => LoadSnapshot(transactionId));
 			await ApplySnapshot(config, baseline, transactionId);
-			await _client.CommitTransactionAsync(transactionId);
+			await ExecuteDataPlaneCall("committing HAProxy transaction", () => _client.CommitTransactionAsync(transactionId));
+		}
+		catch (Generated.ApiException exception)
+		{
+			await TryDeleteTransaction(transactionId);
+			throw CreateDataPlaneException("saving HAProxy configuration", exception);
 		}
 		catch
 		{
@@ -75,9 +82,13 @@ public class HaproxyService : TracingService, IHaproxyService
 
 		try
 		{
-			var baseline = await LoadSnapshot(transactionId);
+			var baseline = await ExecuteDataPlaneCall("loading HAProxy configuration baseline", () => LoadSnapshot(transactionId));
 			await ApplySnapshot(config, baseline, transactionId);
 			return new ValidationResult(true);
+		}
+		catch (Generated.ApiException exception)
+		{
+			return new ValidationResult(false, BuildDataPlaneErrorMessage("validating HAProxy configuration", exception));
 		}
 		catch (Exception err)
 		{
@@ -439,6 +450,7 @@ public class HaproxyService : TracingService, IHaproxyService
 				Name = backend.Name,
 				Mode = ToApiString(backend.Mode),
 				Balance = backend.Balance?.Algorithm.ToString().ToLowerInvariant(),
+				AdvCheck = ToApiString(backend.Adv_check),
 				Servers = servers.Select(ToResource).OrderBy(x => x.Name, StringComparer.Ordinal).ToList(),
 			};
 		});
@@ -624,6 +636,37 @@ public class HaproxyService : TracingService, IHaproxyService
 		}
 	}
 
+	private static InvalidOperationException CreateDataPlaneException(string operation, Generated.ApiException exception)
+	{
+		return new(BuildDataPlaneErrorMessage(operation, exception), exception);
+	}
+
+	private static string BuildDataPlaneErrorMessage(string operation, Generated.ApiException exception)
+	{
+		var details = string.IsNullOrWhiteSpace(exception.Response)
+			? exception.Message
+			: exception.Response.Trim();
+
+		if (details.Contains("Client sent an HTTP request to an HTTPS server.", StringComparison.OrdinalIgnoreCase))
+		{
+			details += " Check the Data Plane API BaseUrl scheme; the current target expects HTTPS.";
+		}
+
+		return $"HAProxy Data Plane API error while {operation} (HTTP {exception.StatusCode}): {details}";
+	}
+
+	private static async Task<T> ExecuteDataPlaneCall<T>(string operation, Func<Task<T>> action)
+	{
+		try
+		{
+			return await action();
+		}
+		catch (Generated.ApiException exception)
+		{
+			throw CreateDataPlaneException(operation, exception);
+		}
+	}
+
 	private static bool HasFrontendChanged(HaproxyFrontendResource desired, HaproxyFrontendResource current)
 	{
 		return !string.Equals(desired.Mode, current.Mode, StringComparison.Ordinal)
@@ -633,7 +676,8 @@ public class HaproxyService : TracingService, IHaproxyService
 	private static bool HasBackendChanged(HaproxyBackendResource desired, HaproxyBackendResource current)
 	{
 		return !string.Equals(desired.Mode, current.Mode, StringComparison.Ordinal)
-			|| !string.Equals(desired.Balance, current.Balance, StringComparison.Ordinal);
+			|| !string.Equals(desired.Balance, current.Balance, StringComparison.Ordinal)
+			|| !string.Equals(desired.AdvCheck, current.AdvCheck, StringComparison.Ordinal);
 	}
 
 	private static string GetTransactionId(Generated.Transaction transaction)
@@ -648,7 +692,14 @@ public class HaproxyService : TracingService, IHaproxyService
 
 	private static string? ToApiString<TEnum>(TEnum? value) where TEnum : struct, Enum
 	{
-		return value?.ToString()?.ToLowerInvariant();
+		if (!value.HasValue)
+		{
+			return null;
+		}
+
+		var field = typeof(TEnum).GetField(value.Value.ToString());
+		var enumMember = field?.GetCustomAttribute<EnumMemberAttribute>();
+		return enumMember?.Value ?? value.Value.ToString().ToLowerInvariant();
 	}
 
 	private static TEnum? ParseEnum<TEnum>(string? value) where TEnum : struct, Enum
@@ -658,7 +709,19 @@ public class HaproxyService : TracingService, IHaproxyService
 			return null;
 		}
 
-		return Enum.TryParse<TEnum>(value, true, out var parsed) ? parsed : null;
+		foreach (var field in typeof(TEnum).GetFields(BindingFlags.Public | BindingFlags.Static))
+		{
+			var enumMember = field.GetCustomAttribute<EnumMemberAttribute>();
+			if (!string.Equals(enumMember?.Value, value, StringComparison.OrdinalIgnoreCase)
+				&& !string.Equals(field.Name, value, StringComparison.OrdinalIgnoreCase))
+			{
+				continue;
+			}
+
+			return (TEnum)field.GetValue(null)!;
+		}
+
+		return null;
 	}
 
 	private static HaproxyGlobalResource ToResource(Generated.Global global)
@@ -752,6 +815,7 @@ public class HaproxyService : TracingService, IHaproxyService
 		{
 			Name = backend.Name,
 			Mode = ParseEnum<Generated.Backend_baseMode>(backend.Mode),
+			Adv_check = ParseEnum<Generated.Backend_baseAdv_check>(backend.AdvCheck),
 			Balance = string.IsNullOrWhiteSpace(backend.Balance)
 				? null
 				: new Generated.Balance

@@ -12,7 +12,7 @@ const oidcConfig: UserManagerSettings = {
 	post_logout_redirect_uri: window.location.origin,
 	silent_redirect_uri: oauth.callbackUrl,
 	response_type: "code",
-	scope: "openid profile email offline_access",
+	scope: "openid",
 	automaticSilentRenew: true,
 	accessTokenExpiringNotificationTimeInSeconds: 120,
 	userStore: new WebStorageStateStore({ store: window.localStorage }),
