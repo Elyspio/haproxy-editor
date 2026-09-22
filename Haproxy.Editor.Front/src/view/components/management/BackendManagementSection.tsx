@@ -246,6 +246,12 @@ export function BackendManagementSection({
 	const [drawerOpen, setDrawerOpen] = useState(isDesktop);
 	const [drawerWidth, setDrawerWidth] = useState(DRAWER_INITIAL_WIDTH);
 	const [backendNameDraft, setBackendNameDraft] = useState(selectedBackend?.name ?? "");
+	const [backendNameDraftSource, setBackendNameDraftSource] = useState(selectedBackend?.name);
+	// Restart the name draft whenever another backend (or a renamed one) is selected.
+	if (backendNameDraftSource !== selectedBackend?.name) {
+		setBackendNameDraftSource(selectedBackend?.name);
+		setBackendNameDraft(selectedBackend?.name ?? "");
+	}
 
 	const backendIndex = selectedBackend ? snapshot.backends.indexOf(selectedBackend) : -1;
 	const selectedServerIndex = selectedBackend?.servers.findIndex((server) => server.name === selection.serverName) ?? -1;
@@ -263,10 +269,6 @@ export function BackendManagementSection({
 		() => Object.entries(parseExtra(selectedBackend?.extra ?? null)).filter(([, value]) => typeof value !== "object" || value === null),
 		[selectedBackend?.extra]
 	);
-
-	useEffect(() => {
-		setBackendNameDraft(selectedBackend?.name ?? "");
-	}, [selectedBackend?.name]);
 
 	useEffect(() => {
 		if (previousDesktopRef.current === isDesktop) return;
@@ -439,7 +441,7 @@ export function BackendManagementSection({
 
 	const closeDrawer = () => setDrawerOpen(false);
 
-	const startResize = (event: ReactPointerEvent<HTMLDivElement>) => {
+	const startResize = (event: ReactPointerEvent<HTMLHRElement>) => {
 		const startX = event.clientX;
 		const startWidth = drawerWidth;
 		const resize = (pointerEvent: PointerEvent) => {
@@ -453,7 +455,7 @@ export function BackendManagementSection({
 		window.addEventListener("pointerup", stop);
 	};
 
-	const resizeWithKeyboard = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+	const resizeWithKeyboard = (event: ReactKeyboardEvent<HTMLHRElement>) => {
 		if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
 		event.preventDefault();
 		const delta = event.key === "ArrowLeft" ? 16 : -16;
@@ -1039,7 +1041,7 @@ export function BackendManagementSection({
 				{isDesktop && drawerOpen && drawerContent ? (
 					<>
 						<Box
-							role="separator"
+							component="hr"
 							aria-label="Resize settings panel"
 							aria-orientation="vertical"
 							aria-valuemin={DRAWER_MIN_WIDTH}
@@ -1049,6 +1051,8 @@ export function BackendManagementSection({
 							onPointerDown={startResize}
 							onKeyDown={resizeWithKeyboard}
 							sx={{
+								m: 0,
+								border: 0,
 								width: 7,
 								flex: "0 0 7px",
 								cursor: "col-resize",

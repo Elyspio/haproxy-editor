@@ -70,8 +70,8 @@ afterEach(() => {
 
 function Harness({ initial = initialSnapshot }: Readonly<{ initial?: HaproxyResourceSnapshot }>) {
 	const [snapshot, setSnapshot] = useState(() => structuredClone(initial));
+	// The mocked navigation hook reads `applicationState`, which `setSelection` keeps in sync.
 	const [selection, setSelectionState] = useState<DashboardSelection>(applicationState.selection);
-	applicationState.selection = selection;
 	const selectedBackend = snapshot.backends.find((backend) => backend.name === selection.backendName) ?? snapshot.backends[0] ?? null;
 
 	const setSelection = (nextSelection: DashboardSelection) => {

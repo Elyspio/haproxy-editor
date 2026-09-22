@@ -22,7 +22,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 	useEffect(() => {
 		const onUserLoaded = (renewed: User) => {
-			authService.user = renewed;
+			authService.storeSession(renewed);
 			setUser(renewed);
 		};
 
@@ -56,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 	const completeSigninCallback = useCallback(async () => {
 		const signedInUser = await authService.handleSigninCallback();
 		if (signedInUser && !signedInUser.expired) {
-			authService.user = signedInUser;
+			authService.storeSession(signedInUser);
 			setUser(signedInUser);
 		} else {
 			setUser(null);

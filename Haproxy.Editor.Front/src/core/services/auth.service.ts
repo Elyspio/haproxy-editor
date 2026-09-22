@@ -46,7 +46,8 @@ export class AuthService {
 		return this.instance;
 	}
 
-	set user(user: User) {
+	/** Uses the access token of a freshly loaded or renewed session for the next API calls. */
+	storeSession(user: User) {
 		this.#token = user.access_token;
 	}
 

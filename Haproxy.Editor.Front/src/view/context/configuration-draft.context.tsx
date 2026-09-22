@@ -35,12 +35,26 @@ export function ConfigurationDraftProvider({ children }: Readonly<{ children: Re
 	const [snapshot, setSnapshot] = useState<HaproxyResourceSnapshot>(initialSnapshot);
 	const [savedBaseline, setSavedBaseline] = useState<HaproxyResourceSnapshot>(() => cloneSnapshot(initialSnapshot));
 	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-	const [hydrationStatus, setHydrationStatus] = useState<ConfigurationHydrationStatus>(initiallyHydrated ? "ready" : "idle");
+	const [isHydrated, setIsHydrated] = useState(initiallyHydrated);
+	const [previousQueryEnabled, setPreviousQueryEnabled] = useState(queryEnabled);
+	const [isRetryingHydration, setIsRetryingHydration] = useState(false);
 	const [isDraftLocked, setIsDraftLocked] = useState(false);
 	const snapshotRef = useRef(snapshot);
 	const savedBaselineRef = useRef(savedBaseline);
 	const hydrationAcceptedRef = useRef(initiallyHydrated);
 	const draftLockedRef = useRef(false);
+
+	// A signed-out session must hydrate again from the server once the user is back.
+	if (previousQueryEnabled !== queryEnabled) {
+		setPreviousQueryEnabled(queryEnabled);
+		if (!queryEnabled) setIsHydrated(false);
+	}
+
+	let hydrationStatus: ConfigurationHydrationStatus;
+	if (!queryEnabled) hydrationStatus = "idle";
+	else if (isHydrated) hydrationStatus = "ready";
+	else if (config.isError && !isRetryingHydration) hydrationStatus = "error";
+	else hydrationStatus = "loading";
 
 	const resetDraft = useCallback((nextSnapshot: HaproxyResourceSnapshot) => {
 		const accepted = cloneSnapshot(nextSnapshot);
@@ -55,7 +69,7 @@ export function ConfigurationDraftProvider({ children }: Readonly<{ children: Re
 	const acceptSnapshot = useCallback(
 		(nextSnapshot: HaproxyResourceSnapshot) => {
 			resetDraft(nextSnapshot);
-			setHydrationStatus("ready");
+			setIsHydrated(true);
 			hydrationAcceptedRef.current = true;
 		},
 		[resetDraft]
@@ -64,28 +78,13 @@ export function ConfigurationDraftProvider({ children }: Readonly<{ children: Re
 	useEffect(() => {
 		if (!queryEnabled) {
 			hydrationAcceptedRef.current = false;
-			setHydrationStatus("idle");
 			return;
 		}
 
 		if (config.data && !hydrationAcceptedRef.current) {
 			acceptSnapshot(config.data);
-			return;
 		}
-
-		if (hydrationAcceptedRef.current) {
-			return;
-		}
-
-		if (config.isError) {
-			setHydrationStatus("error");
-			return;
-		}
-
-		if (config.isPending || config.isLoading) {
-			setHydrationStatus("loading");
-		}
-	}, [acceptSnapshot, config.data, config.isError, config.isLoading, config.isPending, queryEnabled]);
+	}, [acceptSnapshot, config.data, queryEnabled]);
 
 	useEffect(() => {
 		if (!hasUnsavedChanges || hydrationStatus !== "ready") {
@@ -141,9 +140,14 @@ export function ConfigurationDraftProvider({ children }: Readonly<{ children: Re
 		setHasUnsavedChanges(false);
 	}, []);
 
-	const retryHydration = useCallback(() => {
-		setHydrationStatus("loading");
-		void Promise.resolve(config.refetch()).catch(() => setHydrationStatus("error"));
+	const retryHydration = useCallback(async () => {
+		setIsRetryingHydration(true);
+		try {
+			// A failed attempt resolves with the error state; the status falls back to "error" once it settles.
+			await config.refetch();
+		} finally {
+			setIsRetryingHydration(false);
+		}
 	}, [config]);
 
 	const captureSnapshotForSave = useCallback(() => {
