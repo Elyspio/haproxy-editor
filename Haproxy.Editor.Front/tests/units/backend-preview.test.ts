@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { buildBackendPreview } from "@components/management/BackendManagementSection";
 import { createEmptySnapshot } from "@modules/config/config.utils";
 import type { HaproxyBackendResource } from "@modules/config/config.types";

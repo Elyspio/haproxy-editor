@@ -27,8 +27,8 @@ This root README is intentionally short and acts as an entry point to the projec
 ### Prerequisites
 
 - .NET SDK 10
-- Node.js
-- `pnpm`
+- Node.js 26+
+- `pnpm` 12
 - Docker
 
 ### Run the local stack

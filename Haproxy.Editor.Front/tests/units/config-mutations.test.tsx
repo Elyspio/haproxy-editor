@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, cleanup, renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import type { HaproxyResourceSnapshot } from "@modules/config/config.types";
 import { useSaveConfig } from "@/core/api/mutations";
 import { qk } from "@/core/api/queries";

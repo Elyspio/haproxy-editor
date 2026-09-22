@@ -5,11 +5,12 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vp dev",
-		"typecheck": "tsc --project ./config/tsconfig.app.json  -w",
-		"build": "vp check --fix && vp build",
+		"build": "vp build",
+		"preview": "vp preview",
+		"check": "vp check",
 		"lint": "vp lint",
-		"format": "vp fmt . --write",
-		"preview": "yarn build && vite preview",
+		"fmt": "vp fmt",
+		"typecheck": "tsc --project ./config/tsconfig.app.json  -w",
 		"test": "vp test",
 		"test:debug": "vp test --test-timeout=0 --no-file-parallelism",
 		"test:e2e": "playwright test",
@@ -40,17 +41,28 @@
 		"reflect-metadata": "^0.2.2"
 	},
 	"devDependencies": {
-		"@elyspio/vite-eslint-config": "5.0.3",
+		"@elyspio/vite-eslint-config": "^8.0.0-rc.0",
 		"@playwright/test": "^1.62.1",
 		"@testing-library/react": "^16.3.0",
 		"@testing-library/user-event": "^14.6.1",
-		"@types/node": "^25.5.0",
+		"@types/node": "^26.6.2",
 		"@types/react": "^19.2.14",
 		"@types/react-dom": "^19.2.3",
 		"jsdom": "^26.1.0",
 		"tsx": "^4.21.0",
-		"typescript": "^6.0.2",
-		"vite-plus": "^0.1.15",
-		"vitest": "^4.1.2"
+		"typescript": "^7.0.2",
+		"vite": "catalog:",
+		"vite-plus": "catalog:"
+	},
+	"engines": {
+		"node": ">=26.0.0"
+	},
+	"packageManager": "pnpm@12.5.1",
+	"devEngines": {
+		"packageManager": {
+			"name": "pnpm",
+			"version": "12.5.1",
+			"onFail": "download"
+		}
 	}
 }

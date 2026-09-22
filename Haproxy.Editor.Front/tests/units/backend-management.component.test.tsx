@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { BackendManagementSection } from "@components/management/BackendManagementSection";
 import type { HaproxyResourceSnapshot } from "@modules/config/config.types";
 import type { DashboardSelection } from "@modules/dashboard/dashboard.types";

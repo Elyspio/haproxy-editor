@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import type { HaproxyResourceSnapshot } from "@modules/config/config.types";
 import { ConfigurationDraftProvider, useConfigurationDraft } from "@/view/context/configuration-draft.context";
 import { ThemeModeProvider, useThemeMode } from "@/view/context/theme-mode.context";

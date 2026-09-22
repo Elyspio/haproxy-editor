@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { createBackendDraft, findBackendReferences, renameBackend, validateBackendResources } from "@components/management/backend-management.utils";
 import { createEmptySnapshot } from "@modules/config/config.utils";
 

@@ -17,9 +17,14 @@ This file is for Codex-style agents working in this repository. Prefer non-destr
 
 ### Frontend (`Haproxy.Editor.Front`)
 
-- Use `pnpm`; the repo includes `pnpm-lock.yaml` and the Aspire AppHost config uses `.WithPnpm()`.
+- Use `pnpm` 12 and Node.js 26+; the repo includes `pnpm-lock.yaml` and the Aspire AppHost config uses `.WithPnpm()`.
+- The toolchain is Vite+ (`vp`): Oxlint and Oxfmt replace ESLint and Prettier, and Vitest is imported from `vite-plus/test`.
+- Run formatting, lint and type checks with:
+  - `pnpm check`
 - Run frontend lint with:
   - `pnpm lint`
+- Format the frontend with:
+  - `pnpm fmt`
 - Run all frontend tests with:
   - `pnpm test -- --run`
 - Run a single frontend test file with:
