@@ -114,6 +114,6 @@ export function createCockpitTheme(mode: ThemeMode) {
 					},
 				},
 			},
-		}),
+		})
 	);
 }

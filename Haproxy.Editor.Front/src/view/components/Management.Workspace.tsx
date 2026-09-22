@@ -78,14 +78,14 @@ export function ManagementWorkspace() {
 
 	const frontendScopedBackends = useMemo(
 		() => snapshot.backends.filter((backend) => frontendRelatedBackendNames.has(backend.name)),
-		[frontendRelatedBackendNames, snapshot.backends],
+		[frontendRelatedBackendNames, snapshot.backends]
 	);
 
 	const shouldFilterBackendPanel = Boolean(frontendContext && effectiveSelection.section === "backend" && effectiveSelection.frontendName);
 	const backendCandidates = shouldFilterBackendPanel ? frontendScopedBackends : snapshot.backends;
 	const selectedBackend = useMemo(
 		() => backendCandidates.find((backend) => backend.name === effectiveSelection.backendName) ?? backendCandidates[0] ?? null,
-		[backendCandidates, effectiveSelection.backendName],
+		[backendCandidates, effectiveSelection.backendName]
 	);
 	const selectedRuntimeBackend = runtimeBackends.find((backend) => backend.name === selectedBackend?.name) ?? null;
 
@@ -131,7 +131,7 @@ export function ManagementWorkspace() {
 
 				return [...groupedEntries.values()];
 			}),
-		[snapshot.frontends],
+		[snapshot.frontends]
 	);
 
 	const filteredAclEntries = useMemo(() => aclEntries.filter((entry) => entry.frontendName === aclFrontendName), [aclEntries, aclFrontendName]);
@@ -155,7 +155,7 @@ export function ManagementWorkspace() {
 
 	const selectedAclEntry = useMemo(
 		() => filteredAclEntries.find((entry) => entry.acl.name === effectiveSelection.aclName) ?? filteredAclEntries[0] ?? null,
-		[effectiveSelection.aclName, filteredAclEntries],
+		[effectiveSelection.aclName, filteredAclEntries]
 	);
 	const selectedAclUsages = selectedAclEntry?.usages ?? [];
 	const mappingRules = frontendContext?.backendSwitchingRules ?? [];
@@ -175,7 +175,7 @@ export function ManagementWorkspace() {
 		const existingAcls = snapshot.frontends.find((frontend) => frontend.name === ownerFrontendName)?.acls ?? [];
 		const aclName = createUniqueAclName(
 			existingAcls.map((acl) => acl.name),
-			`acl_${existingAcls.length + 1}`,
+			`acl_${existingAcls.length + 1}`
 		);
 
 		updateSnapshot((draft) => {
@@ -211,20 +211,20 @@ export function ManagementWorkspace() {
 
 			const nextAclName = createUniqueAclName(
 				targetFrontend.acls.map((acl) => acl.name),
-				selectedAclEntry.acl.name,
+				selectedAclEntry.acl.name
 			);
 
 			targetFrontend.acls.push(
 				...movedAcls.map((acl) => ({
 					...acl,
 					name: nextAclName,
-				})),
+				}))
 			);
 		});
 
 		const nextAclName = createUniqueAclName(
 			(snapshot.frontends.find((frontend) => frontend.name === nextFrontendName)?.acls ?? []).map((acl) => acl.name),
-			selectedAclEntry.acl.name,
+			selectedAclEntry.acl.name
 		);
 
 		setSelection({ section: "acl", frontendName: nextFrontendName, aclName: nextAclName });

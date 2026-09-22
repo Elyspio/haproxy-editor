@@ -56,7 +56,7 @@ describe("focused application contexts", () => {
 					<ThemeOnlyConsumer />
 					<DraftConsumer />
 				</ConfigurationDraftProvider>
-			</ThemeModeProvider>,
+			</ThemeModeProvider>
 		);
 
 		expect(themeRender).toHaveBeenCalledTimes(1);

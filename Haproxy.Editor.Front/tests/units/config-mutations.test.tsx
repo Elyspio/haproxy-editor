@@ -34,9 +34,7 @@ describe("configuration save mutation", () => {
 	it("stores the canonical response and invalidates the dashboard after success", async () => {
 		const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
 		const invalidateQueries = vi.spyOn(queryClient, "invalidateQueries");
-		const wrapper = ({ children }: Readonly<{ children: ReactNode }>) => (
-			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-		);
+		const wrapper = ({ children }: Readonly<{ children: ReactNode }>) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 		const { result } = renderHook(useSaveConfig, { wrapper });
 
 		await act(async () => result.current.mutateAsync({ ...snapshot, version: 1 }));

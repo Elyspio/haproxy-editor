@@ -31,7 +31,7 @@ describe("AuthCallback", () => {
 						<Route path="/" element={<div>Dashboard</div>} />
 					</Routes>
 				</MemoryRouter>
-			</StrictMode>,
+			</StrictMode>
 		);
 
 		expect(await screen.findByText("Dashboard")).toBeTruthy();
@@ -47,7 +47,7 @@ describe("AuthCallback", () => {
 					<Route path="/oauth/callback" element={<AuthCallback />} />
 					<Route path="/" element={<div>Dashboard</div>} />
 				</Routes>
-			</MemoryRouter>,
+			</MemoryRouter>
 		);
 
 		expect(await screen.findByText("Authentication failed")).toBeTruthy();

@@ -65,7 +65,7 @@ function renderToolbar() {
 			<ConfigurationDraftProvider>
 				<Harness />
 			</ConfigurationDraftProvider>
-		</ThemeProvider>,
+		</ThemeProvider>
 	);
 }
 
@@ -85,7 +85,7 @@ describe("ConfigToolbar", () => {
 			() =>
 				new Promise<HaproxyResourceSnapshot>((resolve) => {
 					resolveSave = resolve;
-				}),
+				})
 		);
 		renderToolbar();
 		fireEvent.click(screen.getByRole("button", { name: "Edit" }));

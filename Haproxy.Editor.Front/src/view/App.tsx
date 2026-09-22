@@ -44,8 +44,8 @@ const router = createBrowserRouter(
 				<Route path={routes.global.edit.path} element={<Navigate replace to={`${routes.dashboard.management.path}?section=global`} />} />
 				<Route path={routes.default.edit.path} element={<Navigate replace to={`${routes.dashboard.management.path}?section=global`} />} />
 			</Route>
-		</>,
-	),
+		</>
+	)
 );
 
 window["haproxy-editor"].router = router;

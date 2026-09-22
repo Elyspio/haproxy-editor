@@ -60,7 +60,7 @@ describe("ApplicationProvider configuration draft", () => {
 		render(
 			<ApplicationProvider>
 				<ContextHarness />
-			</ApplicationProvider>,
+			</ApplicationProvider>
 		);
 
 		expect((await screen.findByTestId("dirty")).textContent).toBe("false");
