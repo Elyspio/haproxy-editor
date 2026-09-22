@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from "react";
 import { Box } from "@mui/material";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router";
 import { ensureExistingSelection, resolveSelectionFromSearchParams, serializeSelection } from "@modules/dashboard/dashboard.utils";
 import type { DashboardSelection } from "@modules/dashboard/dashboard.types";
 import { routes } from "@/config/view.config";

@@ -12,7 +12,7 @@ import {
 	TuneOutlined,
 	ViewQuiltOutlined,
 } from "@mui/icons-material";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router";
 import { routes } from "@/config/view.config";
 import { serializeSelection } from "@modules/dashboard/dashboard.utils";
 import { useWorkspaceNavigation } from "@/view/context/workspace-navigation.context";

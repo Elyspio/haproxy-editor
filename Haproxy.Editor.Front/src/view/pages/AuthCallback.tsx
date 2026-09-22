@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { Box, Button, CircularProgress, Stack, Typography } from "@mui/material";
 import { alpha, keyframes } from "@mui/material/styles";
 import { routes } from "@/config/view.config";

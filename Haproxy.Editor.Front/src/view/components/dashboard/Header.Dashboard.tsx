@@ -1,7 +1,7 @@
 import { alpha, useTheme } from "@mui/material/styles";
 import { AppBar, Avatar, Box, IconButton, InputAdornment, List, ListItemButton, ListItemText, Paper, Stack, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
 import { DarkModeOutlined, LightModeOutlined, LogoutOutlined, Menu, Search, ViewSidebarOutlined } from "@mui/icons-material";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router";
 import { ReactNode, useDeferredValue, useMemo, useState } from "react";
 import { useAuth } from "@/view/context/auth.context";
 import { createEmptyDashboardSnapshot, searchDashboardSnapshot, serializeSelection } from "@modules/dashboard/dashboard.utils";
