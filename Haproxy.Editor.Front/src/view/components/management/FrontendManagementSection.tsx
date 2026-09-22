@@ -1,4 +1,4 @@
-import { Add, DeleteOutline, LanOutlined } from "@mui/icons-material";
+import { Add, DeleteOutlined, LanOutlined } from "@mui/icons-material";
 import { Box, Button, Chip, Divider, MenuItem, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import type { HaproxyFrontendResource, HaproxyResourceSnapshot } from "@modules/config/config.types";
@@ -102,7 +102,7 @@ export function FrontendManagementSection({
 						size="small"
 						color="error"
 						variant="outlined"
-						startIcon={<DeleteOutline fontSize="small" />}
+						startIcon={<DeleteOutlined fontSize="small" />}
 						disabled={!frontendContext}
 						onClick={() => {
 							if (!frontendContext) return;
@@ -309,7 +309,7 @@ export function FrontendManagementSection({
 							</Stack>
 						</Stack>
 					) : (
-						<Typography color="text.secondary">No frontend selected.</Typography>
+						<Typography sx={{ color: "text.secondary" }}>No frontend selected.</Typography>
 					)}
 				</Stack>
 			</Box>

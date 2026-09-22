@@ -55,12 +55,12 @@ export function DashboardHeader({ logo, menuOpen, onToggleMenu }: DashboardHeade
 			}}
 		>
 			<Toolbar sx={{ minHeight: { xs: 72, md: 78 }, gap: 2 }}>
-				<Stack direction="row" alignItems="center" spacing={1.5} sx={{ minWidth: 0 }}>
+				<Stack direction="row" spacing={1.5} sx={{ alignItems: "center", minWidth: 0 }}>
 					<IconButton color="inherit" onClick={() => onToggleMenu(!menuOpen)}>
 						{menuOpen ? <ViewSidebarOutlined /> : <Menu />}
 					</IconButton>
 					<Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
-						<Stack direction="row" alignItems="center" spacing={1}>
+						<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
 							{logo}
 						</Stack>
 					</Link>
@@ -73,12 +73,14 @@ export function DashboardHeader({ logo, menuOpen, onToggleMenu }: DashboardHeade
 						placeholder="Search services, routes, ACLs and servers..."
 						value={query}
 						onChange={(event) => setQuery(event.target.value)}
-						InputProps={{
-							startAdornment: (
-								<InputAdornment position="start">
-									<Search fontSize="small" />
-								</InputAdornment>
-							),
+						slotProps={{
+							input: {
+								startAdornment: (
+									<InputAdornment position="start">
+										<Search fontSize="small" />
+									</InputAdornment>
+								),
+							},
 						}}
 					/>
 
@@ -113,16 +115,16 @@ export function DashboardHeader({ logo, menuOpen, onToggleMenu }: DashboardHeade
 					) : null}
 				</Box>
 
-				<Stack direction="row" alignItems="center" spacing={1} ml={"auto"}>
+				<Stack direction="row" spacing={1} sx={{ alignItems: "center", ml: "auto" }}>
 					<IconButton color="inherit" onClick={() => setThemeMode(themeMode === "dark" ? "light" : "dark")}>
 						{themeMode === "dark" ? <LightModeOutlined /> : <DarkModeOutlined />}
 					</IconButton>
 
-					<Stack direction="row" alignItems="center" spacing={1.25} sx={{ pl: 1 }}>
+					<Stack direction="row" spacing={1.25} sx={{ alignItems: "center", pl: 1 }}>
 						<Avatar sx={{ bgcolor: alpha(theme.palette.primary.main, 0.2), color: theme.palette.text.primary }}>{displayName.charAt(0).toUpperCase()}</Avatar>
 						<Box sx={{ display: { xs: "none", sm: "block" } }}>
 							<Typography variant="body1">{displayName}</Typography>
-							<Typography variant="body2" color="text.secondary">
+							<Typography variant="body2" sx={{ color: "text.secondary" }}>
 								Cockpit operator
 							</Typography>
 						</Box>

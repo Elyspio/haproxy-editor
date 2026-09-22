@@ -1,4 +1,4 @@
-import { AccountTreeOutlined, Add, DeleteOutline } from "@mui/icons-material";
+import { AccountTreeOutlined, Add, DeleteOutlined } from "@mui/icons-material";
 import { Autocomplete, Box, Chip, IconButton, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import { useState } from "react";
@@ -63,9 +63,9 @@ export function ConditionExpressionEditor({ value, aclOptions, updateValue, labe
 	}
 
 	return (
-		<Box sx={{ display: "grid", gap: 0.75 }} pt={0.5}>
-			<Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
-				<Typography variant="body2" fontWeight={600}>
+		<Box sx={{ pt: 0.5, display: "grid", gap: 0.75 }}>
+			<Stack direction="row" spacing={1} sx={{ justifyContent: "space-between", alignItems: "center" }}>
+				<Typography variant="body2" sx={{ fontWeight: 600 }}>
 					{label}
 				</Typography>
 			</Stack>
@@ -77,7 +77,7 @@ export function ConditionExpressionEditor({ value, aclOptions, updateValue, labe
 				onChange={(nextNode) => commitExpression({ kind: "tree", root: nextNode })}
 			/>
 			{helperText ? (
-				<Typography variant="caption" color="text.secondary">
+				<Typography variant="caption" sx={{ color: "text.secondary" }}>
 					{helperText}
 				</Typography>
 			) : null}
@@ -139,7 +139,7 @@ function CompactGroupEditor({ node, aclOptions, depth, onChange, onDelete }: Rea
 		>
 			<Stack spacing={0.5}>
 				{/* Group header */}
-				<Stack direction="row" alignItems="center" spacing={0.5} sx={{ flexWrap: "wrap", gap: 0.5 }}>
+				<Stack direction="row" spacing={0.5} sx={{ alignItems: "center", flexWrap: "wrap", gap: 0.5 }}>
 					{node.negated ? <Chip label="NOT" size="small" color="error" variant="outlined" onDelete={toggleNegated} sx={{ fontWeight: 600, height: 24 }} /> : null}
 					{node.items.length > 1 ? (
 						<Chip
@@ -175,7 +175,7 @@ function CompactGroupEditor({ node, aclOptions, depth, onChange, onDelete }: Rea
 					{onDelete ? (
 						<Tooltip title="Delete group" arrow>
 							<IconButton size="small" color="error" onClick={onDelete} sx={{ width: 24, height: 24 }}>
-								<DeleteOutline sx={{ fontSize: 16 }} />
+								<DeleteOutlined sx={{ fontSize: 16 }} />
 							</IconButton>
 						</Tooltip>
 					) : null}
@@ -212,7 +212,7 @@ function CompactGroupEditor({ node, aclOptions, depth, onChange, onDelete }: Rea
 						))}
 					</Stack>
 				) : (
-					<Typography variant="caption" color="text.disabled" sx={{ pl: 0.5 }}>
+					<Typography variant="caption" sx={{ color: "text.disabled", pl: 0.5 }}>
 						Empty group
 					</Typography>
 				)}
@@ -231,7 +231,7 @@ type AclClauseRowProps = {
 
 function AclClauseRow({ item, aclOptions, onNameChange, onNegatedToggle, onDelete }: Readonly<AclClauseRowProps>) {
 	return (
-		<Stack direction="row" alignItems="center" spacing={0.5}>
+		<Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
 			<Chip
 				label={item.negated ? "NOT" : "ACL"}
 				size="small"
@@ -256,7 +256,7 @@ function AclClauseRow({ item, aclOptions, onNameChange, onNegatedToggle, onDelet
 			/>
 			<Tooltip title="Delete" arrow>
 				<IconButton size="small" color="error" onClick={onDelete} sx={{ width: 24, height: 24 }}>
-					<DeleteOutline sx={{ fontSize: 16 }} />
+					<DeleteOutlined sx={{ fontSize: 16 }} />
 				</IconButton>
 			</Tooltip>
 		</Stack>

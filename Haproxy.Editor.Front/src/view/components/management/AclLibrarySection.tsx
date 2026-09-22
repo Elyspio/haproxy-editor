@@ -1,4 +1,4 @@
-import { Add, DeleteOutline, Inventory2Outlined } from "@mui/icons-material";
+import { Add, DeleteOutlined, Inventory2Outlined } from "@mui/icons-material";
 import { Box, Button, Chip, Divider, List, ListItemButton, ListItemText, MenuItem, Paper, Stack, TextField, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import type { HaproxyResourceSnapshot } from "@modules/config/config.types";
@@ -51,7 +51,7 @@ export function AclLibrarySection({
 						size="small"
 						color="error"
 						variant="outlined"
-						startIcon={<DeleteOutline fontSize="small" />}
+						startIcon={<DeleteOutlined fontSize="small" />}
 						disabled={!selectedAclEntry || selectedAclUsages.length > 0}
 						onClick={deleteSelectedAcl}
 					>
@@ -109,7 +109,7 @@ export function AclLibrarySection({
 							<Stack spacing={1.5} sx={{ pr: 0.5 }}>
 								{groupedAclEntries.map((group) => (
 									<Box key={group.kindLabel}>
-										<Typography variant="overline" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+										<Typography variant="overline" sx={{ color: "text.secondary", display: "block", mb: 1 }}>
 											{group.kindLabel}
 										</Typography>
 										<List disablePadding sx={{ display: "grid", gap: 1 }}>
@@ -135,7 +135,7 @@ export function AclLibrarySection({
 								))}
 							</Stack>
 						) : (
-							<Typography variant="body2" color="text.secondary">
+							<Typography variant="body2" sx={{ color: "text.secondary" }}>
 								No ACL on this frontend yet.
 							</Typography>
 						)}
@@ -148,7 +148,7 @@ export function AclLibrarySection({
 							<SectionHeader title="Editor" />
 							{selectedAclEntry.duplicateCount > 1 ? (
 								<Paper sx={{ p: 1.25, backgroundColor: alpha(theme.palette.info.main, 0.08) }}>
-									<Typography variant="body2" color="text.secondary">
+									<Typography variant="body2" sx={{ color: "text.secondary" }}>
 										This ACL name has {selectedAclEntry.duplicateCount} definitions on this frontend. Edits apply to the grouped definitions.
 									</Typography>
 								</Paper>
@@ -344,11 +344,11 @@ export function AclLibrarySection({
 									{selectedAclUsages.map((usage) => (
 										<Paper key={usage.id} sx={{ p: 1.25, backgroundColor: alpha(theme.palette.warning.main, 0.08) }}>
 											<Stack spacing={0.5}>
-												<Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
+												<Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "space-between" }}>
 													<Typography variant="body1">{usage.backendName}</Typography>
 													<Chip size="small" label={usage.cond ?? "if"} color="warning" />
 												</Stack>
-												<Typography variant="body2" color="text.secondary">
+												<Typography variant="body2" sx={{ color: "text.secondary" }}>
 													{usage.condTest ?? "No condition expression"}
 												</Typography>
 											</Stack>
@@ -357,15 +357,15 @@ export function AclLibrarySection({
 								</Stack>
 							) : (
 								<Paper sx={{ p: 1.25, backgroundColor: alpha(theme.palette.success.main, 0.08) }}>
-									<Typography variant="body2" color="text.secondary">
+									<Typography variant="body2" sx={{ color: "text.secondary" }}>
 										This ACL is not referenced by any mapping rule.
 									</Typography>
 								</Paper>
 							)}
 						</Stack>
 					) : (
-						<Stack spacing={1.5} alignItems="flex-start" justifyContent="center" sx={{ height: "100%" }}>
-							<Typography color="text.secondary">Select an ACL from the current frontend or create a new one.</Typography>
+						<Stack spacing={1.5} sx={{ alignItems: "flex-start", justifyContent: "center", height: "100%" }}>
+							<Typography sx={{ color: "text.secondary" }}>Select an ACL from the current frontend or create a new one.</Typography>
 							<Button size="small" variant="contained" startIcon={<Add fontSize="small" />} disabled={!aclFrontendName} onClick={() => createAcl(aclFrontendName)}>
 								Create ACL
 							</Button>

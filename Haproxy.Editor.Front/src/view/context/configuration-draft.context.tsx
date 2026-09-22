@@ -58,7 +58,7 @@ export function ConfigurationDraftProvider({ children }: Readonly<{ children: Re
 			setHydrationStatus("ready");
 			hydrationAcceptedRef.current = true;
 		},
-		[resetDraft],
+		[resetDraft]
 	);
 
 	useEffect(() => {
@@ -166,7 +166,7 @@ export function ConfigurationDraftProvider({ children }: Readonly<{ children: Re
 			resetDraft(nextSnapshot);
 			unlockDraft();
 		},
-		[resetDraft, unlockDraft],
+		[resetDraft, unlockDraft]
 	);
 
 	const value = useMemo<ConfigurationDraftContextValue>(
@@ -182,18 +182,7 @@ export function ConfigurationDraftProvider({ children }: Readonly<{ children: Re
 			completeSave,
 			abortSave: unlockDraft,
 		}),
-		[
-			captureSnapshotForSave,
-			completeSave,
-			discardSnapshotChanges,
-			hasUnsavedChanges,
-			hydrationStatus,
-			isDraftLocked,
-			retryHydration,
-			snapshot,
-			unlockDraft,
-			updateSnapshot,
-		],
+		[captureSnapshotForSave, completeSave, discardSnapshotChanges, hasUnsavedChanges, hydrationStatus, isDraftLocked, retryHydration, snapshot, unlockDraft, updateSnapshot]
 	);
 
 	return <ConfigurationDraftContext.Provider value={value}>{children}</ConfigurationDraftContext.Provider>;
@@ -214,7 +203,7 @@ export function ConfigurationBoundary({ children }: Readonly<{ children: ReactNo
 
 	if (hydrationStatus === "error") {
 		return (
-			<Stack role="alert" alignItems="center" justifyContent="center" spacing={2} sx={{ minHeight: "100dvh", p: 3 }}>
+			<Stack role="alert" spacing={2} sx={{ alignItems: "center", justifyContent: "center", minHeight: "100dvh", p: 3 }}>
 				<Alert severity="error">Unable to load the HAProxy configuration.</Alert>
 				<Button variant="contained" onClick={retryHydration}>
 					Retry
@@ -225,9 +214,9 @@ export function ConfigurationBoundary({ children }: Readonly<{ children: ReactNo
 
 	return (
 		<Box sx={{ minHeight: "100dvh", display: "grid", placeItems: "center" }}>
-			<Stack alignItems="center" spacing={2}>
+			<Stack spacing={2} sx={{ alignItems: "center" }}>
 				<CircularProgress size={36} />
-				<Typography color="text.secondary">Loading configuration…</Typography>
+				<Typography sx={{ color: "text.secondary" }}>Loading configuration…</Typography>
 			</Stack>
 		</Box>
 	);

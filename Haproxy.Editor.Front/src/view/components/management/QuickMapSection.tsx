@@ -1,4 +1,4 @@
-import { Add, DeleteOutline, RocketLaunchOutlined } from "@mui/icons-material";
+import { Add, DeleteOutlined, RocketLaunchOutlined } from "@mui/icons-material";
 import { Autocomplete, Box, Button, Chip, Divider, IconButton, MenuItem, Paper, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import { useState } from "react";
@@ -301,7 +301,7 @@ export function QuickMapSection({ snapshot, frontendContext, updateSnapshot, set
 											}
 										/>
 										{draft.newBackend.servers.map((server, index) => (
-											<Stack key={index} direction="row" spacing={1} alignItems="center">
+											<Stack key={index} direction="row" spacing={1} sx={{ alignItems: "center" }}>
 												<TextField
 													size="small"
 													label="Name"
@@ -340,7 +340,7 @@ export function QuickMapSection({ snapshot, frontendContext, updateSnapshot, set
 													<MenuItem value="disabled">Disabled</MenuItem>
 												</TextField>
 												<IconButton size="small" color="error" onClick={() => removeServer(index)}>
-													<DeleteOutline fontSize="small" />
+													<DeleteOutlined fontSize="small" />
 												</IconButton>
 											</Stack>
 										))}
@@ -440,21 +440,21 @@ export function QuickMapSection({ snapshot, frontendContext, updateSnapshot, set
 									options={existingAclNames}
 									value={draft.extraAclNames}
 									onChange={(_, next) => updateDraft({ extraAclNames: next })}
-									renderTags={(value, getTagProps) =>
+									renderValue={(value, getItemProps) =>
 										value.map((option, index) => {
-											const { key, ...tagProps } = getTagProps({ index });
+											const { key, ...tagProps } = getItemProps({ index });
 											return <Chip key={key} size="small" label={option} {...tagProps} />;
 										})
 									}
 									renderInput={(params) => <TextField {...params} label="Combine with existing ACLs" placeholder="Select ACLs" />}
 								/>
 							) : (
-								<Typography variant="body2" color="text.secondary">
+								<Typography variant="body2" sx={{ color: "text.secondary" }}>
 									No existing ACLs on this frontend.
 								</Typography>
 							)}
 							{draft.extraAclNames.length > 0 && hasMatch ? (
-								<Stack direction="row" spacing={1} alignItems="center">
+								<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
 									<Typography variant="body2">Combine with:</Typography>
 									<ToggleButtonGroup
 										size="small"

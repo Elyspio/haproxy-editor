@@ -43,7 +43,7 @@ export function ConfigurationSaveOverlay() {
 
 	return (
 		<Backdrop data-testid="configuration-save-overlay" open={isDraftLocked} sx={{ zIndex: (theme) => theme.zIndex.modal + 1 }}>
-			<Stack alignItems="center" spacing={2}>
+			<Stack spacing={2} sx={{ alignItems: "center" }}>
 				<CircularProgress color="inherit" />
 				<Typography>Saving configuration…</Typography>
 			</Stack>

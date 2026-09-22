@@ -87,7 +87,7 @@ export function ConfigToolbar({ variant = "all", commitDisabled = false }: Reado
 	}, [refreshMutation]);
 
 	return (
-		<Stack spacing={1} direction={"row"} alignItems={"center"} height={"100%"}>
+		<Stack spacing={1} direction={"row"} sx={{ alignItems: "center", height: "100%" }}>
 			{refreshError ? (
 				<Alert severity="error" sx={{ py: 0 }}>
 					{refreshError}

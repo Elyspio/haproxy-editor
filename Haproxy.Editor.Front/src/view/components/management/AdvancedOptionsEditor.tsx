@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Add, DeleteOutline, LockOutlined, TuneOutlined } from "@mui/icons-material";
+import { Add, DeleteOutlined, LockOutlined, TuneOutlined } from "@mui/icons-material";
 import { Accordion, AccordionDetails, AccordionSummary, Autocomplete, Chip, MenuItem, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import { ExpandMore } from "@mui/icons-material";
@@ -94,10 +94,10 @@ export function AdvancedOptionsEditor({ section, label, extra, fields, onChange,
 			}}
 		>
 			<AccordionSummary expandIcon={<ExpandMore fontSize="small" />}>
-				<Stack direction="row" spacing={1} alignItems="center">
+				<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
 					<TuneOutlined fontSize="small" color="action" />
 					<Typography variant="subtitle2">Advanced</Typography>
-					<Typography variant="caption" color="text.secondary">
+					<Typography variant="caption" sx={{ color: "text.secondary" }}>
 						{label}
 					</Typography>
 					{entries.length > 0 ? <Chip size="small" label={entries.length} /> : null}
@@ -105,7 +105,7 @@ export function AdvancedOptionsEditor({ section, label, extra, fields, onChange,
 			</AccordionSummary>
 			<AccordionDetails sx={inline ? { px: 1.25 } : undefined}>
 				<Stack spacing={1.25}>
-					<Typography variant="caption" color="text.secondary">
+					<Typography variant="caption" sx={{ color: "text.secondary" }}>
 						Any HAProxy Data Plane {section} setting this editor does not model. Existing values are preserved even when they are not editable here.
 					</Typography>
 
@@ -120,7 +120,7 @@ export function AdvancedOptionsEditor({ section, label, extra, fields, onChange,
 								data-testid={`${testId}-row-${name}`}
 								direction={inline ? "column" : { xs: "column", md: "row" }}
 								spacing={1.25}
-								alignItems={inline ? "stretch" : { md: "center" }}
+								sx={{ alignItems: inline ? "stretch" : { md: "center" } }}
 							>
 								<TextField
 									size="small"
@@ -170,7 +170,7 @@ export function AdvancedOptionsEditor({ section, label, extra, fields, onChange,
 
 								<Tooltip title={readOnly && !complex ? "Locked fields cannot be removed" : "Remove"} arrow>
 									<span>
-										<DeleteOutline
+										<DeleteOutlined
 											fontSize="small"
 											color={readOnly && !complex ? "disabled" : "error"}
 											sx={{ cursor: readOnly && !complex ? "not-allowed" : "pointer" }}
@@ -185,7 +185,7 @@ export function AdvancedOptionsEditor({ section, label, extra, fields, onChange,
 						);
 					})}
 
-					<Stack direction={inline ? "column" : "row"} spacing={1.25} alignItems={inline ? "stretch" : "center"}>
+					<Stack direction={inline ? "column" : "row"} spacing={1.25} sx={{ alignItems: inline ? "stretch" : "center" }}>
 						<Autocomplete
 							size="small"
 							sx={{ minWidth: inline ? 0 : 260, width: inline ? "100%" : undefined }}
@@ -197,14 +197,18 @@ export function AdvancedOptionsEditor({ section, label, extra, fields, onChange,
 								<li {...props} key={option.name}>
 									<Stack>
 										<Typography variant="body2">{option.name}</Typography>
-										<Typography variant="caption" color="text.secondary">
+										<Typography variant="caption" sx={{ color: "text.secondary" }}>
 											{option.type === "enum" ? option.enumValues.join(" | ") : option.type}
 										</Typography>
 									</Stack>
 								</li>
 							)}
 							renderInput={(params) => (
-								<TextField {...params} label="Add a field" slotProps={{ htmlInput: { ...params.inputProps, "data-testid": `${testId}-field` } }} />
+								<TextField
+									{...params}
+									label="Add a field"
+									slotProps={{ ...params.slotProps, htmlInput: { ...params.slotProps.htmlInput, "data-testid": `${testId}-field` } }}
+								/>
 							)}
 						/>
 						<Chip
