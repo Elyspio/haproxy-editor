@@ -1,4 +1,5 @@
-import { createBrowserRouter, createRoutesFromChildren, Navigate, Route, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, createRoutesFromChildren, Navigate, Route } from "react-router";
+import { RouterProvider } from "react-router/dom";
 import { AuthProvider } from "@/view/context/auth.context";
 import { ProtectedRoute } from "@components/auth/ProtectedRoute";
 import { AuthCallback } from "@pages/AuthCallback";
@@ -43,8 +44,8 @@ const router = createBrowserRouter(
 				<Route path={routes.global.edit.path} element={<Navigate replace to={`${routes.dashboard.management.path}?section=global`} />} />
 				<Route path={routes.default.edit.path} element={<Navigate replace to={`${routes.dashboard.management.path}?section=global`} />} />
 			</Route>
-		</>,
-	),
+		</>
+	)
 );
 
 window["haproxy-editor"].router = router;

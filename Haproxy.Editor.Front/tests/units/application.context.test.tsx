@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { ApplicationProvider } from "@/view/context/application.context";
 import { useConfigurationDraft } from "@/view/context/configuration-draft.context";
 
@@ -60,7 +60,7 @@ describe("ApplicationProvider configuration draft", () => {
 		render(
 			<ApplicationProvider>
 				<ContextHarness />
-			</ApplicationProvider>,
+			</ApplicationProvider>
 		);
 
 		expect((await screen.findByTestId("dirty")).textContent).toBe("false");

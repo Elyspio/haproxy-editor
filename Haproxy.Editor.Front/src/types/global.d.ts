@@ -1,4 +1,4 @@
-import type { createBrowserRouter } from "react-router-dom";
+import type { createBrowserRouter } from "react-router";
 
 declare global {
 	/** Runtime configuration and application services exposed by the host page. */

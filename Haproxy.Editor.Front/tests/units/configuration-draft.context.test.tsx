@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { useRef } from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { useState } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { HaproxyResourceSnapshot } from "@modules/config/config.types";
 import { ConfigurationBoundary, ConfigurationDraftProvider, useConfigurationDraft } from "@/view/context/configuration-draft.context";
 
@@ -34,7 +34,7 @@ vi.mock("@/core/api/queries", () => ({
 
 function DraftHarness() {
 	const draft = useConfigurationDraft();
-	const defaultsReference = useRef(draft.snapshot.defaults);
+	const [initialDefaults] = useState(() => draft.snapshot.defaults);
 
 	return (
 		<>
@@ -42,7 +42,7 @@ function DraftHarness() {
 			<div data-testid="daemon">{String(draft.snapshot.global.daemon)}</div>
 			<div data-testid="dirty">{String(draft.hasUnsavedChanges)}</div>
 			<div data-testid="locked">{String(draft.isDraftLocked)}</div>
-			<div data-testid="defaults-stable">{String(defaultsReference.current === draft.snapshot.defaults)}</div>
+			<div data-testid="defaults-stable">{String(initialDefaults === draft.snapshot.defaults)}</div>
 			<button type="button" onClick={() => draft.updateSnapshot((snapshot) => void (snapshot.global.daemon = true))}>
 				Enable daemon
 			</button>
@@ -153,5 +153,21 @@ describe("ConfigurationDraftProvider", () => {
 		queryState.isError = false;
 		view.rerender(<ProviderHarness boundary providerKey="ready" />);
 		expect(screen.getByText("Editable workspace")).toBeTruthy();
+	});
+
+	it("shows loading while a retry runs and returns to the error state when it fails again", async () => {
+		queryState.data = undefined;
+		queryState.isError = true;
+		queryState.error = new Error("upstream unavailable");
+		let settleRetry!: () => void;
+		queryState.refetch.mockReturnValue(new Promise<void>((resolve) => (settleRetry = resolve)));
+		render(<ProviderHarness boundary />);
+
+		fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+		expect(screen.getByText("Loading configuration…")).toBeTruthy();
+
+		await act(async () => settleRetry());
+		expect(screen.getByText("Unable to load the HAProxy configuration.")).toBeTruthy();
+		expect(screen.queryByText("Editable workspace")).toBeNull();
 	});
 });

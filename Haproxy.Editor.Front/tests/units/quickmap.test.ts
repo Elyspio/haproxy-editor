@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { createAclClause, createGroupClause, serializeConditionExpression } from "@components/management/condition-expression.utils";
 import { buildAclFromPresetState, createUniqueAclName } from "@components/management/acl.utils";
 import { deriveAclNameFromValue } from "@components/management/QuickMapSection";

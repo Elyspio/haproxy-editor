@@ -14,12 +14,11 @@ The frontend provides the user interface for browsing, validating, and editing H
 ## Stack
 
 - React
-- TypeScript
-- Vite
+- TypeScript 7
+- Vite+ (Vite, Vitest, Oxlint and Oxfmt through the `vp` CLI)
 - Redux Toolkit
 - Inversify
 - MUI / MUI X
-- Vitest
 
 ## Project structure
 
@@ -70,7 +69,7 @@ This is used for values such as API endpoints.
 
 ## Commands
 
-From this folder:
+From this folder (Node.js 26+, pnpm 12):
 
 ### Install dependencies
 
@@ -81,8 +80,11 @@ pnpm install
 ### Development / build
 
 ```powershell
+pnpm dev
 pnpm build
+pnpm check   # formatting (Oxfmt), lint (Oxlint) and type checking
 pnpm lint
+pnpm fmt
 pnpm test -- --run
 ```
 
@@ -123,12 +125,12 @@ Most UI code lives under `src/view`, including:
 
 ## Testing
 
-Frontend tests are written with Vitest.
+Frontend tests are written with Vitest, provided by Vite+ (`vite-plus/test`).
 
 Typical commands:
 
 ```powershell
 pnpm test -- --run
 pnpm build
-pnpm lint
+pnpm check
 ```

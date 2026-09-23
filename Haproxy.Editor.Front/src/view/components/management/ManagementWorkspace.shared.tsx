@@ -51,17 +51,17 @@ export function Panel({
 		>
 			<Stack
 				direction="row"
-				alignItems="center"
-				justifyContent="space-between"
 				spacing={2}
 				sx={{
+					alignItems: "center",
+					justifyContent: "space-between",
 					px: 2.25,
 					py: 1.75,
 					borderBottom: `1px solid ${alpha(focused ? theme.palette.primary.main : theme.palette.divider, focused ? 0.28 : 1)}`,
 					background: focused ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.14)}, ${alpha(theme.palette.background.paper, 0.92)})` : "transparent",
 				}}
 			>
-				<Stack direction="row" alignItems="center" spacing={1.25}>
+				<Stack direction="row" spacing={1.25} sx={{ alignItems: "center" }}>
 					<Box
 						sx={{
 							display: "grid",
@@ -76,18 +76,18 @@ export function Panel({
 						{icon}
 					</Box>
 					<Box>
-						<Stack direction="row" spacing={1} alignItems="center">
+						<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
 							<Typography variant="h6">{title}</Typography>
 							{focused ? <Chip size="small" color="primary" label="Active" /> : null}
 						</Stack>
 						{subtitle ? (
-							<Typography variant="body2" color="text.secondary">
+							<Typography variant="body2" sx={{ color: "text.secondary" }}>
 								{subtitle}
 							</Typography>
 						) : null}
 					</Box>
 				</Stack>
-				<Stack direction="row" alignItems="center" spacing={1.5}>
+				<Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
 					{actions}
 					<ConfigToolbar />
 				</Stack>
@@ -99,7 +99,7 @@ export function Panel({
 
 export function SectionHeader({ title, action }: Readonly<{ title: string; action?: ReactNode }>) {
 	return (
-		<Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.25 }}>
+		<Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between", mb: 1.25 }}>
 			<Typography variant="subtitle2">{title}</Typography>
 			{action}
 		</Stack>
@@ -124,32 +124,32 @@ function tokenizeLine(line: string): ReactNode[] {
 			nodes.push(
 				<span key={i} style={{ fontWeight: 700 }}>
 					{word}
-				</span>,
+				</span>
 			);
 		} else if (i === 0 && HAPROXY_DIRECTIVES.has(word)) {
 			nodes.push(
 				<span key={i} className="cfg-directive">
 					{word}
-				</span>,
+				</span>
 			);
 		} else if (word.startsWith("#")) {
 			nodes.push(
 				<span key={i} className="cfg-comment">
 					{parts.slice(i).join(" ")}
-				</span>,
+				</span>
 			);
 			break;
 		} else if (/^\d+$/.test(word) || /^\d+\.\d+\.\d+\.\d+:\d+$/.test(word) || /^[\d.*]+:\d+$/.test(word)) {
 			nodes.push(
 				<span key={i} className="cfg-value">
 					{word}
-				</span>,
+				</span>
 			);
 		} else if (i === 1 && indent === 0) {
 			nodes.push(
 				<span key={i} className="cfg-name">
 					{word}
-				</span>,
+				</span>
 			);
 		} else {
 			nodes.push(word);
@@ -192,16 +192,16 @@ export function ConfigPreview({ config, collapsible = false, defaultExpanded = t
 				onClick={collapsible ? () => setExpanded((current) => !current) : undefined}
 				data-testid={collapsible ? "config-preview-toggle" : undefined}
 				direction="row"
-				alignItems="center"
-				justifyContent="space-between"
 				sx={{
+					alignItems: "center",
+					justifyContent: "space-between",
 					px: 1.5,
 					py: 0.75,
 					borderBottom: `1px solid ${theme.palette.divider}`,
 					backgroundColor: isDark ? alpha(theme.palette.background.paper, 0.5) : alpha(theme.palette.background.paper, 0.8),
 				}}
 			>
-				<Stack direction="row" alignItems="center" spacing={0.75}>
+				<Stack direction="row" spacing={0.75} sx={{ alignItems: "center" }}>
 					{collapsible ? (
 						<ExpandMore fontSize="small" sx={{ transform: expanded ? "rotate(180deg)" : "rotate(-90deg)", transition: theme.transitions.create("transform") }} />
 					) : null}
@@ -218,7 +218,7 @@ export function ConfigPreview({ config, collapsible = false, defaultExpanded = t
 						HAProxy Config Preview
 					</Typography>
 				</Stack>
-				<Typography variant="caption" color="text.disabled" sx={{ fontSize: 10 }}>
+				<Typography variant="caption" sx={{ color: "text.disabled", fontSize: 10 }}>
 					{lines.length} {lines.length === 1 ? "line" : "lines"}
 				</Typography>
 			</Stack>

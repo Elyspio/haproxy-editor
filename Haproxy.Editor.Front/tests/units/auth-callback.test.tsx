@@ -1,7 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { MemoryRouter, Route, Routes } from "react-router";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { StrictMode } from "react";
 import { AuthCallback } from "@pages/AuthCallback";
 
@@ -31,7 +31,7 @@ describe("AuthCallback", () => {
 						<Route path="/" element={<div>Dashboard</div>} />
 					</Routes>
 				</MemoryRouter>
-			</StrictMode>,
+			</StrictMode>
 		);
 
 		expect(await screen.findByText("Dashboard")).toBeTruthy();
@@ -47,7 +47,7 @@ describe("AuthCallback", () => {
 					<Route path="/oauth/callback" element={<AuthCallback />} />
 					<Route path="/" element={<div>Dashboard</div>} />
 				</Routes>
-			</MemoryRouter>,
+			</MemoryRouter>
 		);
 
 		expect(await screen.findByText("Authentication failed")).toBeTruthy();

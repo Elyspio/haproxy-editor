@@ -78,9 +78,9 @@ function LoginPortal() {
 			/>
 
 			<Stack
-				alignItems="center"
 				spacing={5}
 				sx={{
+					alignItems: "center",
 					position: "relative",
 					zIndex: 1,
 					maxWidth: 520,
@@ -163,7 +163,7 @@ function LoginPortal() {
 				</Box>
 
 				{/* Title block */}
-				<Stack alignItems="center" spacing={1.5} sx={{ animation: `${fadeUp} 0.8s ease-out 0.15s both` }}>
+				<Stack spacing={1.5} sx={{ alignItems: "center", animation: `${fadeUp} 0.8s ease-out 0.15s both` }}>
 					<Typography
 						variant="h4"
 						sx={{
@@ -175,13 +175,13 @@ function LoginPortal() {
 					>
 						Haproxy Cockpit
 					</Typography>
-					<Typography variant="body1" color="text.secondary" sx={{ textAlign: "center", maxWidth: 360, lineHeight: 1.6 }}>
+					<Typography variant="body1" sx={{ color: "text.secondary", textAlign: "center", maxWidth: 360, lineHeight: 1.6 }}>
 						Authenticate with your identity provider to access the load balancer configuration workspace.
 					</Typography>
 				</Stack>
 
 				{/* Status + Action */}
-				<Stack alignItems="center" spacing={3} sx={{ animation: `${fadeUp} 0.8s ease-out 0.3s both`, width: "100%" }}>
+				<Stack spacing={3} sx={{ alignItems: "center", animation: `${fadeUp} 0.8s ease-out 0.3s both`, width: "100%" }}>
 					<Box
 						sx={{
 							display: "flex",

@@ -51,7 +51,7 @@ function BackendMarker({ backendName }: Readonly<{ backendName: string }>) {
 	const tone = getBackendChipTone(backendName, theme);
 
 	return (
-		<Stack direction="row" spacing={0.875} alignItems="center" sx={{ minWidth: 0 }} height={"100%"}>
+		<Stack direction="row" spacing={0.875} sx={{ alignItems: "center", height: "100%", minWidth: 0 }}>
 			<Box
 				sx={{
 					width: 10,
@@ -62,7 +62,7 @@ function BackendMarker({ backendName }: Readonly<{ backendName: string }>) {
 					boxShadow: `0 0 0 3px ${tone.backgroundColor}`,
 				}}
 			/>
-			<Typography variant="body2" fontWeight={600} noWrap color="text.primary">
+			<Typography variant="body2" noWrap sx={{ fontWeight: 600, color: "text.primary" }}>
 				{backendName}
 			</Typography>
 		</Stack>
@@ -187,7 +187,7 @@ export function MappingSection({
 
 					return left.backendName.localeCompare(right.backendName, undefined, { sensitivity: "base" });
 				}),
-		[aclLookup, mappingRules],
+		[aclLookup, mappingRules]
 	);
 
 	const effectiveSelectedRuleIndex =
@@ -210,10 +210,10 @@ export function MappingSection({
 				sortable: true,
 				renderCell: ({ row }) => (
 					<Stack sx={{ py: 0.75, minWidth: 0 }}>
-						<Typography variant="body2" fontWeight={600} noWrap>
+						<Typography variant="body2" noWrap sx={{ fontWeight: 600 }}>
 							{row.routeLabel}
 						</Typography>
-						<Typography variant="caption" color="text.secondary" noWrap>
+						<Typography variant="caption" noWrap sx={{ color: "text.secondary" }}>
 							{row.routeKind}
 						</Typography>
 					</Stack>
@@ -234,7 +234,7 @@ export function MappingSection({
 				sortable: false,
 			},
 		],
-		[],
+		[]
 	);
 
 	return (
@@ -308,7 +308,7 @@ export function MappingSection({
 										</MenuItem>
 									))}
 								</TextField>
-								<Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+								<Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
 									<Chip size="small" label={`${mappingAcls.length} available ACLs`} />
 									<Chip size="small" label={`${mappingRules.length} routing rules`} />
 									<Chip
@@ -348,7 +348,7 @@ export function MappingSection({
 									<Box sx={{ px: 1.5, py: 1.25, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.9)}` }}>
 										<Stack spacing={0.5}>
 											<Typography variant="subtitle2">Routing rules</Typography>
-											<Typography variant="body2" color="text.secondary">
+											<Typography variant="body2" sx={{ color: "text.secondary" }}>
 												Select a route on the left to edit its target backend and condition details.
 											</Typography>
 										</Stack>
@@ -403,10 +403,10 @@ export function MappingSection({
 								>
 									{selectedRule && selectedRuleRow ? (
 										<Stack spacing={1.25}>
-											<Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={1}>
+											<Stack direction="row" spacing={1} sx={{ alignItems: "flex-start", justifyContent: "space-between" }}>
 												<Box>
 													<Typography variant="h6">{selectedRuleRow.routeLabel}</Typography>
-													<Typography variant="body2" color="text.secondary">
+													<Typography variant="body2" sx={{ color: "text.secondary" }}>
 														{selectedRuleRow.routeKind} · {selectedRuleRow.conditionSummary}
 													</Typography>
 												</Box>
@@ -415,7 +415,7 @@ export function MappingSection({
 												</Button>
 											</Stack>
 
-											<Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+											<Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
 												<Chip size="small" variant="outlined" label={selectedRuleRow.routeKind} />
 												<BackendMarker backendName={selectedRule.backendName || "No backend"} />
 											</Stack>
@@ -478,13 +478,13 @@ export function MappingSection({
 											/>
 										</Stack>
 									) : (
-										<Typography color="text.secondary">Select a routing rule to edit it.</Typography>
+										<Typography sx={{ color: "text.secondary" }}>Select a routing rule to edit it.</Typography>
 									)}
 								</Paper>
 							</Box>
 						) : (
-							<Stack spacing={1.5} alignItems="flex-start" justifyContent="center" sx={{ height: "100%" }}>
-								<Typography color="text.secondary">No routing rule on this frontend yet.</Typography>
+							<Stack spacing={1.5} sx={{ alignItems: "flex-start", justifyContent: "center", height: "100%" }}>
+								<Typography sx={{ color: "text.secondary" }}>No routing rule on this frontend yet.</Typography>
 								<Button
 									size="small"
 									variant="contained"
@@ -500,7 +500,7 @@ export function MappingSection({
 							</Stack>
 						)
 					) : (
-						<Typography color="text.secondary">No frontend selected.</Typography>
+						<Typography sx={{ color: "text.secondary" }}>No frontend selected.</Typography>
 					)}
 				</Box>
 			</Box>
