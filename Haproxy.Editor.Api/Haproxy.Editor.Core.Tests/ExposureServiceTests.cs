@@ -21,7 +21,7 @@ public class ExposureServiceTests
 		]);
 		var service = CreateService(repository: repository);
 
-		var result = await service.List();
+		var result = await service.List(TestContext.Current.CancellationToken);
 
 		result.Count.ShouldBe(2);
 		result.Select(mapping => mapping.FrontendName).ShouldBe(["fe_a", "fe_b"]);
@@ -42,7 +42,7 @@ public class ExposureServiceTests
 		});
 		var service = CreateService(haproxy: haproxy);
 
-		var result = await service.Discover();
+		var result = await service.Discover(TestContext.Current.CancellationToken);
 
 		result.Frontends.Select(frontend => frontend.Name).ShouldBe(["fe_a", "fe_z"]);
 		result.Frontends[1].AclNames.ShouldBe(["a", "z"]);
@@ -87,7 +87,7 @@ public class ExposureServiceTests
 			Matcher = new ExposureMatcher { Type = ExposureMatcherType.Host, Value = "example.test" },
 			AclReferences = ["host_acl"],
 			Operator = ExposureOperator.And,
-		});
+		}, TestContext.Current.CancellationToken);
 
 		await repository.Received(1).Create(Arg.Is<ManagedExposure>(exposure => exposure != null &&
 			exposure.RuleCondition == $"({exposure.ManagedAclName} host_acl)"), Arg.Any<CancellationToken>());
@@ -107,7 +107,7 @@ public class ExposureServiceTests
 			FrontendName = "fe_main",
 			BackendName = "be_main",
 			AclReferences = [" host_acl ", "host_acl"],
-		});
+		}, TestContext.Current.CancellationToken);
 
 		await repository.Received(1).Create(Arg.Is<ManagedExposure>(exposure => exposure != null &&
 			exposure.AclReferences.SequenceEqual(new[] { "host_acl" }) &&
@@ -167,7 +167,7 @@ public class ExposureServiceTests
 			FrontendName = "fe_main",
 			BackendName = "be_main",
 			AclReferences = ["host_acl"],
-		});
+		}, TestContext.Current.CancellationToken);
 		await getConfigStarted.Task;
 		leaseLost.Cancel();
 

@@ -8,9 +8,10 @@
 - Build the .NET projects from the repo root with:
   - `dotnet build .\Haproxy.Editor.slnx`
 - Run all backend tests with:
-  - `dotnet test .\Haproxy.Editor.slnx`
+  - `dotnet test --solution .\Haproxy.Editor.slnx`
 - Run a single backend test with:
-  - `dotnet test .\Haproxy.Editor.Api\Haproxy.Editor.Core.Tests\Haproxy.Editor.Core.Tests.csproj --filter "FullyQualifiedName~HaproxyServiceTests.SaveConfig_commits_transaction_after_resource_creation"`
+  - `dotnet test --project .\Haproxy.Editor.Api\Haproxy.Editor.Core.Tests\Haproxy.Editor.Core.Tests.csproj --filter-method "*HaproxyServiceTests.SaveConfig_commits_transaction_after_resource_creation"`
+- Backend tests use xunit.v3 on Microsoft.Testing.Platform (enabled through `test.runner` in `global.json`), Shouldly assertions and Testcontainers for Docker-backed integration tests. Pass `TestContext.Current.CancellationToken` to cancellable calls in tests.
 - There is no dedicated backend lint command checked into this repository.
 
 ### Frontend (`Haproxy.Editor.Front`)

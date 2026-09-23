@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using Haproxy.Editor.Abstractions.Exceptions;
@@ -117,7 +118,10 @@ public sealed class DockerFactAttribute : FactAttribute
 {
 	private static readonly Lazy<bool> DockerAvailable = new(CheckDockerAvailability);
 
-	public DockerFactAttribute()
+	public DockerFactAttribute(
+		[CallerFilePath] string? sourceFilePath = null,
+		[CallerLineNumber] int sourceLineNumber = -1)
+		: base(sourceFilePath, sourceLineNumber)
 	{
 		if (!DockerAvailable.Value)
 		{
