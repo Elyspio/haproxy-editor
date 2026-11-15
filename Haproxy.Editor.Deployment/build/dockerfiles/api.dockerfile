@@ -51,7 +51,7 @@ ENV ENTRY_DLL ${ENTRY_DLL}
 # Configuration de la timezone en EUROPE/PARIS + editeur nano
 RUN apt-get update && apt-get install tzdata -y && apt-get install -y locales nano \
     && rm -rf /var/lib/apt/lists/* \
-    && localedef -i fr_FR -c -f UTF-8 -A /usr/share/locale/locale.alias fr_FR.UTF-8 \
+    && localedef -i fr_FR -c -f UTF-8 fr_FR.UTF-8 \
     && ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime \
     && dpkg-reconfigure -f noninteractive tzdata
 ENV LANG fr_FR.utf8
