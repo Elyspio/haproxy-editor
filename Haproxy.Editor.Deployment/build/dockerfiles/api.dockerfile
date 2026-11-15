@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 ARG SLN_PATH
 ARG MAIN_CSPROJ_PATH
 ARG ROOT_FOLDER
@@ -44,7 +44,7 @@ RUN dotnet publish ./${MAIN_CSPROJ_PATH} --no-restore -c ${COMPILE_TARGET} -o  $
 #
 # Deploiement du container docker
 #
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS production
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS production
 ARG ENTRY_DLL
 ENV ENTRY_DLL ${ENTRY_DLL}
 
