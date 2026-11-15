@@ -8,8 +8,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="Scrutor.AspNetCore" Version="3.3.0" />
-		<PackageReference Include="Elyspio.Utils.Telemetry" Version="3.0.0-preview.3" />
-		<PackageReference Include="Elyspio.Utils.Telemetry.MongoDB" Version="3.0.0-preview.3" />
+		<PackageReference Include="Elyspio.Utils.Telemetry" Version="3.0.0" />
+		<PackageReference Include="Elyspio.Utils.Telemetry.MongoDB" Version="3.0.0" />
 	</ItemGroup>
 
 </Project>
