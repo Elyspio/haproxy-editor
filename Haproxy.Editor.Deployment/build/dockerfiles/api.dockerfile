@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 ARG SLN_PATH
 ARG MAIN_CSPROJ_PATH
 ARG ROOT_FOLDER
@@ -44,14 +44,14 @@ RUN dotnet publish ./${MAIN_CSPROJ_PATH} --no-restore -c ${COMPILE_TARGET} -o  $
 #
 # Deploiement du container docker
 #
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS production
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS production
 ARG ENTRY_DLL
 ENV ENTRY_DLL ${ENTRY_DLL}
 
 # Configuration de la timezone en EUROPE/PARIS + editeur nano
 RUN apt-get update && apt-get install tzdata -y && apt-get install -y locales nano \
     && rm -rf /var/lib/apt/lists/* \
-    && localedef -i fr_FR -c -f UTF-8 -A /usr/share/locale/locale.alias fr_FR.UTF-8 \
+    && localedef -i fr_FR -c -f UTF-8 fr_FR.UTF-8 \
     && ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime \
     && dpkg-reconfigure -f noninteractive tzdata
 ENV LANG fr_FR.utf8

@@ -4,7 +4,7 @@
 
 ### Backend (`Haproxy.Editor.Api`)
 
-- The .NET SDK is pinned in the root `global.json` to `10.0.400` (`latestFeature` roll-forward).
+- The .NET SDK is pinned in the root `global.json` to `11.0.100` (`latestFeature` roll-forward).
 - Build the .NET projects from the repo root with:
   - `dotnet build .\Haproxy.Editor.slnx`
 - Run all backend tests with:

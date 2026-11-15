@@ -1,5 +1,5 @@
-using Elyspio.Utils.Telemetry.Technical.Extensions;
-using Elyspio.Utils.Telemetry.Tracing.Builder;
+using Elyspio.Utils.Telemetry;
+using Elyspio.Utils.Telemetry.MongoDB.Extensions;
 using Haproxy.Editor.Abstractions.Configurations;
 using Haproxy.Editor.Abstractions.Extensions;
 using Haproxy.Editor.Adapters.Haproxy;
@@ -18,17 +18,9 @@ var builder = WebApplication.CreateBuilder(args);
 IdentityModelEventSource.ShowPII = true;
 
 builder.Configuration.AddJsonFile("appsettings.dockerhost.json", optional: true, reloadOnChange: true);
-builder.Host.UseSerilogWithTelemetry();
 
-if (builder.Configuration.IsTelemetryEnabled(out var telemetryOptions))
-{
-	var telemetry = new AppOpenTelemetryBuilder<Program>(telemetryOptions!, builder.Configuration);
-	telemetry.AddAssembly<ConfigController>();
-	telemetry.AddAssembly<HaproxyService>();
-	telemetry.AddAssembly<MongoExposureRepository>();
-	telemetry.Build(builder.Services);
-	builder.Services.AddOpenTelemetryJsonConfiguration(builder.Configuration);
-}
+// Serilog console, plus traces, metrics and logs over OTLP when OTEL_EXPORTER_OTLP_ENDPOINT is set (Aspire, K8s chart).
+builder.AddElyspioTelemetry(options => options.Tracing = tracing => tracing.AddAppMongoInstrumentation());
 
 builder.AddModule<CoreModule>();
 builder.AddModule<HaproxyAdapterModule>();
@@ -157,8 +149,6 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-
-app.UseOpenTelemetryJsonConfiguration();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

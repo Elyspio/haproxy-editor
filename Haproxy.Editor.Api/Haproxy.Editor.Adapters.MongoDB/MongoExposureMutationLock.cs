@@ -1,4 +1,4 @@
-using Elyspio.Utils.Telemetry.Tracing.Elements;
+using Elyspio.Utils.Telemetry;
 using Haproxy.Editor.Abstractions.Exceptions;
 using Haproxy.Editor.Abstractions.Interfaces.Services;
 using Microsoft.Extensions.Logging;
@@ -7,12 +7,13 @@ using MongoDB.Driver;
 
 namespace Haproxy.Editor.Adapters.MongoDB;
 
-public sealed class MongoExposureMutationLock : TracingRepository, IExposureMutationLock
+public sealed class MongoExposureMutationLock : IExposureMutationLock
 {
 	private const string LockId = "haproxy-config";
 	private static readonly TimeSpan DefaultLeaseDuration = TimeSpan.FromMinutes(2);
 	private static readonly TimeSpan DefaultRenewalInterval = TimeSpan.FromSeconds(30);
 	private readonly IMongoCollection<BsonDocument> _locks;
+	private readonly ILogger<MongoExposureMutationLock> _logger;
 	private readonly TimeProvider _timeProvider;
 	private readonly TimeSpan _leaseDuration;
 	private readonly TimeSpan _renewalInterval;
@@ -27,8 +28,9 @@ public sealed class MongoExposureMutationLock : TracingRepository, IExposureMuta
 		ILogger<MongoExposureMutationLock> logger,
 		TimeProvider timeProvider,
 		TimeSpan leaseDuration,
-		TimeSpan renewalInterval) : base(logger)
+		TimeSpan renewalInterval)
 	{
+		_logger = logger;
 		if (leaseDuration <= TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(leaseDuration));
 		if (renewalInterval <= TimeSpan.Zero || renewalInterval >= leaseDuration) throw new ArgumentOutOfRangeException(nameof(renewalInterval));
 
@@ -40,7 +42,7 @@ public sealed class MongoExposureMutationLock : TracingRepository, IExposureMuta
 
 	public async Task<IExposureMutationLease> Acquire(CancellationToken cancellationToken = default)
 	{
-		using var trace = LogRepository();
+		using var trace = _logger.Trace();
 		var owner = Guid.NewGuid().ToString("N");
 		var now = _timeProvider.GetUtcNow().UtcDateTime;
 		var filter = Builders<BsonDocument>.Filter.Eq("_id", LockId) &
