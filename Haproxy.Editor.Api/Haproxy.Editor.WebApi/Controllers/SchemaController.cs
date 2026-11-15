@@ -1,4 +1,4 @@
-using Elyspio.Utils.Telemetry.Tracing.Elements;
+using Elyspio.Utils.Telemetry;
 using Haproxy.Editor.Abstractions.Data;
 using Haproxy.Editor.Abstractions.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -9,7 +9,7 @@ namespace Haproxy.Editor.Controllers;
 [ApiController]
 [Authorize]
 [Route("schema")]
-public sealed class SchemaController(ISchemaService schema, ILogger<SchemaController> logger) : TracingController(logger)
+public sealed class SchemaController(ISchemaService schema, ILogger<SchemaController> logger) : ControllerBase
 {
 	/// <summary>
 	///     Lists the Data Plane API fields available as advanced options, per configuration section.
@@ -17,7 +17,7 @@ public sealed class SchemaController(ISchemaService schema, ILogger<SchemaContro
 	[HttpGet(Name = "GetSchema")]
 	public HaproxySchema Get()
 	{
-		using var trace = LogController();
+		using var trace = logger.Trace();
 		return schema.GetSchema();
 	}
 }

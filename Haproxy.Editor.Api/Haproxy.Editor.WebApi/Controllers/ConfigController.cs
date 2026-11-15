@@ -1,4 +1,4 @@
-using Elyspio.Utils.Telemetry.Tracing.Elements;
+using Elyspio.Utils.Telemetry;
 using Haproxy.Editor.Abstractions.Data;
 using Haproxy.Editor.Abstractions.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -9,12 +9,12 @@ namespace Haproxy.Editor.Controllers;
 [ApiController]
 [Authorize]
 [Route("config")]
-public sealed class ConfigController(IHaproxyService config, ILogger<ConfigController> logger) : TracingController(logger)
+public sealed class ConfigController(IHaproxyService config, ILogger<ConfigController> logger) : ControllerBase
 {
 	[HttpGet(Name = "GetConfig")]
 	public async Task<HaproxyResourceSnapshot> Get(CancellationToken cancellationToken)
 	{
-		using var trace = LogController();
+		using var trace = logger.Trace();
 		return await config.GetConfig(cancellationToken);
 	}
 
@@ -23,7 +23,7 @@ public sealed class ConfigController(IHaproxyService config, ILogger<ConfigContr
 		[FromBody] HaproxyResourceSnapshot snapshot,
 		CancellationToken cancellationToken)
 	{
-		using var trace = LogController();
+		using var trace = logger.Trace();
 		return await config.SaveConfig(snapshot, cancellationToken);
 	}
 
@@ -32,7 +32,7 @@ public sealed class ConfigController(IHaproxyService config, ILogger<ConfigContr
 		[FromBody] HaproxyResourceSnapshot snapshot,
 		CancellationToken cancellationToken)
 	{
-		using var trace = LogController();
+		using var trace = logger.Trace();
 		var result = await config.ValidateConfig(snapshot, cancellationToken);
 		return result.IsValid
 			? NoContent()

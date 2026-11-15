@@ -1,4 +1,4 @@
-using Elyspio.Utils.Telemetry.Tracing.Elements;
+using Elyspio.Utils.Telemetry;
 using Haproxy.Editor.Abstractions.Data;
 using Haproxy.Editor.Abstractions.Exceptions;
 using Haproxy.Editor.Abstractions.Interfaces.Services;
@@ -10,7 +10,7 @@ using Generated = Haproxy.Editor.Adapters.Haproxy;
 
 namespace Haproxy.Editor.Core.Services;
 
-public class HaproxyService : TracingService, IHaproxyService
+public class HaproxyService : IHaproxyService
 {
 	/// <summary>
 	///     Section writes must not use the Data Plane API's <c>full_section</c> mode. That mode replaces a section
@@ -22,6 +22,7 @@ public class HaproxyService : TracingService, IHaproxyService
 	private const int MaximumConcurrentReads = 8;
 
 	private readonly IFusionCache _cache;
+	private readonly ILogger<HaproxyService> _logger;
 	private readonly Generated.HaproxyClient _client;
 	private readonly SemaphoreSlim _dashboardCacheGate = new(1, 1);
 	private readonly SemaphoreSlim _readLimiter = new(MaximumConcurrentReads, MaximumConcurrentReads);
@@ -32,8 +33,9 @@ public class HaproxyService : TracingService, IHaproxyService
 		Generated.HaproxyClient client,
 		ISchemaService schema,
 		IFusionCache cache,
-		ILogger<HaproxyService> logger) : base(logger)
+		ILogger<HaproxyService> logger)
 	{
+		_logger = logger;
 		_client = client;
 		_schema = schema;
 		_cache = cache;
@@ -41,7 +43,7 @@ public class HaproxyService : TracingService, IHaproxyService
 
 	public async Task<HaproxyResourceSnapshot> GetConfig(CancellationToken cancellationToken = default)
 	{
-		using var _ = LogService();
+		using var _ = _logger.Trace();
 		return await ExecuteDataPlaneCall("loading HAProxy configuration", () => LoadSnapshot(null, cancellationToken));
 	}
 
@@ -83,7 +85,7 @@ public class HaproxyService : TracingService, IHaproxyService
 
 	private async Task<DashboardSnapshot> LoadDashboardSnapshot(CancellationToken cancellationToken)
 	{
-		using var _ = LogService();
+		using var _ = _logger.Trace();
 
 		var configTask = ExecuteDataPlaneCall("loading HAProxy configuration", () => LoadSnapshot(null, cancellationToken));
 		var healthTask = ExecuteDataPlaneCall(
@@ -112,7 +114,7 @@ public class HaproxyService : TracingService, IHaproxyService
 
 	public async Task<HaproxyResourceSnapshot> SaveConfig(HaproxyResourceSnapshot config, CancellationToken cancellationToken = default)
 	{
-		using var _ = LogService();
+		using var _ = _logger.Trace();
 
 		var transaction = await ExecuteDataPlaneCall(
 			"starting HAProxy transaction",
@@ -162,7 +164,7 @@ public class HaproxyService : TracingService, IHaproxyService
 
 	public async Task<IValidationResult> ValidateConfig(HaproxyResourceSnapshot config, CancellationToken cancellationToken = default)
 	{
-		using var _ = LogService();
+		using var _ = _logger.Trace();
 
 		var transaction = await ExecuteDataPlaneCall(
 			"starting HAProxy transaction",
@@ -201,7 +203,7 @@ public class HaproxyService : TracingService, IHaproxyService
 
 	private async Task<HaproxyResourceSnapshot> LoadSnapshot(string? transactionId, CancellationToken cancellationToken)
 	{
-		using var _ = LogService();
+		using var _ = _logger.Trace();
 
 		var versionTask = ExecuteDataPlaneRead(token => _client.GetConfigurationVersionAsync(transactionId, token), cancellationToken);
 		var globalTask = ExecuteDataPlaneRead(token => _client.GetGlobalAsync(transactionId, true, token), cancellationToken);
