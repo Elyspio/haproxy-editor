@@ -6,20 +6,26 @@ This file is for Codex-style agents working in this repository. Prefer non-destr
 
 ### Backend (`Haproxy.Editor.Api`)
 
-- SDK is pinned in `Haproxy.Editor.Api\global.json` to .NET `9.0.0` with roll-forward enabled.
+- The .NET SDK is pinned in the root `global.json` to `10.0.400` (`latestFeature` roll-forward).
 - Build the .NET projects from the repo root with:
   - `dotnet build .\Haproxy.Editor.slnx`
 - Run all backend tests with:
-  - `dotnet test .\Haproxy.Editor.slnx`
+  - `dotnet test --solution .\Haproxy.Editor.slnx`
 - Run a single backend test with:
-  - `dotnet test .\Haproxy.Editor.Api\Haproxy.Editor.Core.Tests\Haproxy.Editor.Core.Tests.csproj --filter "FullyQualifiedName~HaproxyServiceTests.SaveConfig_commits_transaction_after_resource_creation"`
+  - `dotnet test --project .\Haproxy.Editor.Api\Haproxy.Editor.Core.Tests\Haproxy.Editor.Core.Tests.csproj --filter-method "*HaproxyServiceTests.SaveConfig_commits_transaction_after_resource_creation"`
+- Backend tests use xunit.v3 on Microsoft.Testing.Platform (enabled through `test.runner` in `global.json`), Shouldly assertions and Testcontainers for Docker-backed integration tests. Pass `TestContext.Current.CancellationToken` to cancellable calls in tests.
 - There is no dedicated backend lint command checked into this repository.
 
 ### Frontend (`Haproxy.Editor.Front`)
 
-- Use `pnpm`; the repo includes `pnpm-lock.yaml` and the Aspire AppHost config uses `.WithPnpm()`.
+- Use `pnpm` 12 and Node.js 26+; the repo includes `pnpm-lock.yaml` and the Aspire AppHost config uses `.WithPnpm()`.
+- The toolchain is Vite+ (`vp`): Oxlint and Oxfmt replace ESLint and Prettier, and Vitest is imported from `vite-plus/test`.
+- Run formatting, lint and type checks with:
+  - `pnpm check`
 - Run frontend lint with:
   - `pnpm lint`
+- Format the frontend with:
+  - `pnpm fmt`
 - Run all frontend tests with:
   - `pnpm test -- --run`
 - Run a single frontend test file with:
@@ -36,7 +42,7 @@ This file is for Codex-style agents working in this repository. Prefer non-destr
 - The Playwright suite boots the real Aspire stack (MongoDB, Keycloak, HAProxy, the API and the Vite frontend). Docker must be running.
 - Run it from `Haproxy.Editor.Front` with:
   - `pnpm test:e2e`
-- The suite is intentionally separate from `dotnet test .\Haproxy.Editor.slnx` because container startup makes it much slower than the unit and integration suites.
+- The suite is intentionally separate from `dotnet test --solution .\Haproxy.Editor.slnx` because container startup makes it much slower than the unit and integration suites.
 - `Haproxy.Editor.AppHost\haproxy` holds a real production configuration. Playwright copies it to a temporary directory and re-points the container bind mount there, so a test run never edits the tracked `haproxy.cfg`. Keep that behaviour when adding tests.
 
 ### Local orchestration

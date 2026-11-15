@@ -1,11 +1,14 @@
-FROM node:24 AS build
+FROM node:26 AS build
+
+ARG PNPM_VERSION=12.5.1
 
 WORKDIR /app
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
-RUN corepack enable
+# Node 25+ images no longer ship corepack
+RUN npm install -g pnpm@$PNPM_VERSION
 
 COPY Haproxy.Editor.Front/package.json ./
 COPY Haproxy.Editor.Front/pnpm-lock.yaml ./

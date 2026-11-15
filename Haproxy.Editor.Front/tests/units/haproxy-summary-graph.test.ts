@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { convertSnapshotToFlow } from "@components/summary/HaproxySummaryGraph";
 import type { HaproxyResourceSnapshot } from "@modules/config/config.types";
 

@@ -12,7 +12,7 @@ import {
 	TuneOutlined,
 	ViewQuiltOutlined,
 } from "@mui/icons-material";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router";
 import { routes } from "@/config/view.config";
 import { serializeSelection } from "@modules/dashboard/dashboard.utils";
 import { useWorkspaceNavigation } from "@/view/context/workspace-navigation.context";
@@ -89,7 +89,7 @@ export function SidebarDashboard({ expanded = true, setExpanded }: Readonly<Dash
 			}}
 		>
 			<Box sx={{ px: expanded ? 2 : 1, py: 2.25 }}>
-				<Typography variant="subtitle2" color="text.secondary" sx={{ px: expanded ? 1 : 0, textAlign: expanded ? "left" : "center" }}>
+				<Typography variant="subtitle2" sx={{ color: "text.secondary", px: expanded ? 1 : 0, textAlign: expanded ? "left" : "center" }}>
 					{expanded ? "Dashboard" : "DB"}
 				</Typography>
 				<List dense disablePadding sx={{ mt: 1, display: "grid", gap: 0.5 }}>
@@ -114,7 +114,7 @@ export function SidebarDashboard({ expanded = true, setExpanded }: Readonly<Dash
 			<Divider />
 
 			<Box sx={{ flex: 1, minHeight: 0, px: expanded ? 2 : 1, py: 2, overflow: "auto" }}>
-				<Typography variant="subtitle2" color="text.secondary" sx={{ px: expanded ? 1 : 0, textAlign: expanded ? "left" : "center" }}>
+				<Typography variant="subtitle2" sx={{ color: "text.secondary", px: expanded ? 1 : 0, textAlign: expanded ? "left" : "center" }}>
 					{expanded ? "Modify" : "MD"}
 				</Typography>
 				<List dense disablePadding sx={{ mt: 1, display: "grid", gap: 0.5 }}>

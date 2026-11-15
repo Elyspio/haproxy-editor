@@ -50,7 +50,7 @@ function KpiCard({ title, value, subtitle, tone, trend }: Readonly<DashboardKpi>
 
 	return (
 		<Paper sx={{ p: 2, display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 138 }}>
-			<Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1}>
+			<Stack direction="row" spacing={1} sx={{ justifyContent: "space-between", alignItems: "flex-start" }}>
 				<Box>
 					<Typography variant="subtitle2" sx={{ opacity: 0.8 }}>
 						{title}
@@ -65,7 +65,7 @@ function KpiCard({ title, value, subtitle, tone, trend }: Readonly<DashboardKpi>
 				/>
 			</Stack>
 			<Box>
-				<Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+				<Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.75rem" }}>
 					{subtitle}
 				</Typography>
 				{trend.length > 1 ? (
@@ -109,13 +109,13 @@ function MetricTile({ label, value, unit, color }: Readonly<{ label: string; val
 
 	return (
 		<Box sx={{ flex: 1, minWidth: 100 }}>
-			<Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.06em", mb: 0.25 }}>
+			<Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.06em", mb: 0.25 }}>
 				{label}
 			</Typography>
-			<Stack direction="row" alignItems="baseline" spacing={0.5}>
+			<Stack direction="row" spacing={0.5} sx={{ alignItems: "baseline" }}>
 				<Typography sx={{ fontSize: 22, fontWeight: 700, lineHeight: 1.15, color: color ?? theme.palette.text.primary }}>{value}</Typography>
 				{unit ? (
-					<Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+					<Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.75rem" }}>
 						{unit}
 					</Typography>
 				) : null}
@@ -159,7 +159,7 @@ function ServerHealth({ backends }: Readonly<{ backends: RuntimeBackendStatus[] 
 			</Typography>
 			<Stack spacing={2.5}>
 				<Box>
-					<Stack direction="row" justifyContent="space-between" sx={{ mb: 0.75 }}>
+					<Stack direction="row" sx={{ justifyContent: "space-between", mb: 0.75 }}>
 						<Typography variant="body2" sx={{ fontSize: "0.75rem" }}>
 							{stats.totalHealthy} / {stats.totalServers} healthy
 						</Typography>
@@ -210,11 +210,11 @@ function BackendBreakdown({ backends }: Readonly<{ backends: RuntimeBackendStatu
 
 	return (
 		<Paper sx={{ p: 2, flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
-			<Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
+			<Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 1.5 }}>
 				<Typography variant="subtitle2" sx={{ opacity: 0.8 }}>
 					Backend Activity
 				</Typography>
-				<Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.7rem" }}>
+				<Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.7rem" }}>
 					{backends.length} backends
 				</Typography>
 			</Stack>
@@ -225,8 +225,8 @@ function BackendBreakdown({ backends }: Readonly<{ backends: RuntimeBackendStatu
 
 					return (
 						<Box key={backend.name}>
-							<Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1} sx={{ mb: 0.25 }}>
-								<Stack direction="row" alignItems="center" spacing={0.75} sx={{ minWidth: 0 }}>
+							<Stack direction="row" spacing={1} sx={{ justifyContent: "space-between", alignItems: "center", mb: 0.25 }}>
+								<Stack direction="row" spacing={0.75} sx={{ alignItems: "center", minWidth: 0 }}>
 									<Box
 										sx={{
 											width: 7,
@@ -242,7 +242,7 @@ function BackendBreakdown({ backends }: Readonly<{ backends: RuntimeBackendStatu
 									</Typography>
 								</Stack>
 								<Stack direction="row" spacing={1.5} sx={{ flexShrink: 0 }}>
-									<Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.7rem" }}>
+									<Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.7rem" }}>
 										{backend.sessionRate}/s
 									</Typography>
 									<Typography variant="body2" sx={{ fontSize: "0.7rem", fontWeight: 600, minWidth: 36, textAlign: "right" }}>
@@ -283,7 +283,7 @@ function ActiveAlerts() {
 
 	return (
 		<Paper sx={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-			<Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${theme.palette.divider}` }}>
+			<Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", px: 2, py: 1.5, borderBottom: `1px solid ${theme.palette.divider}` }}>
 				<Typography variant="subtitle2" sx={{ opacity: 0.8 }}>
 					Active Alerts
 				</Typography>
@@ -316,8 +316,10 @@ function ActiveAlerts() {
 									<ListItemText
 										primary={alert.message}
 										secondary={`${alert.resourceType ?? "system"}${alert.resourceName ? ` · ${alert.resourceName}` : ""}`}
-										primaryTypographyProps={{ variant: "body2", fontWeight: 600, fontSize: "0.8rem" }}
-										secondaryTypographyProps={{ variant: "body2", fontSize: "0.7rem" }}
+										slotProps={{
+											primary: { variant: "body2", sx: { fontWeight: 600, fontSize: "0.8rem" } },
+											secondary: { variant: "body2", sx: { fontSize: "0.7rem" } },
+										}}
 									/>
 									<Chip size="small" label={alert.severity} color={isCritical ? "error" : "warning"} sx={{ fontWeight: 700, fontSize: "0.65rem", height: 22 }} />
 								</ListItem>
@@ -325,11 +327,11 @@ function ActiveAlerts() {
 						})}
 					</List>
 				) : (
-					<Stack alignItems="center" justifyContent="center" sx={{ height: "100%" }} spacing={0.75}>
+					<Stack spacing={0.75} sx={{ alignItems: "center", justifyContent: "center", height: "100%" }}>
 						<Typography variant="body1" sx={{ fontWeight: 600, opacity: 0.6 }}>
 							No active alerts
 						</Typography>
-						<Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+						<Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.75rem" }}>
 							All systems operating normally.
 						</Typography>
 					</Stack>
@@ -348,14 +350,14 @@ export function Summary() {
 	return (
 		<Stack spacing={2} sx={{ height: "100%", minHeight: 0, p: { xs: 1.5, md: 2 }, overflow: "auto" }}>
 			{/* Header */}
-			<Stack direction="row" justifyContent="space-between" alignItems="flex-end">
+			<Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "flex-end" }}>
 				<Box>
 					<Typography variant="h6">Dashboard</Typography>
-					<Typography variant="body2" color="text.secondary">
+					<Typography variant="body2" sx={{ color: "text.secondary" }}>
 						Operational cockpit · {configSummary.frontendCount} frontends · {configSummary.backendCount} backends · {configSummary.serverCount} servers
 					</Typography>
 				</Box>
-				<Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.7rem", whiteSpace: "nowrap" }}>
+				<Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.7rem", whiteSpace: "nowrap" }}>
 					{summary.runtimeStatus} · {new Date(summary.generatedAt).toLocaleTimeString()}
 				</Typography>
 			</Stack>

@@ -47,7 +47,7 @@ public class HaproxyServiceTests : IDisposable
 			new Generated.Server { Name = "app_1", Address = "10.0.0.10", Port = 8080 },
 		]);
 
-		var result = await service.GetConfig();
+		var result = await service.GetConfig(TestContext.Current.CancellationToken);
 
 		result.Version.ShouldBe(7);
 		result.Frontends.Count.ShouldBe(1);
@@ -82,7 +82,7 @@ public class HaproxyServiceTests : IDisposable
 		client.GetFrontendsAsync("tx-1", true, Arg.Any<CancellationToken>()).Returns([]);
 		client.GetBackendsAsync("tx-1", true, Arg.Any<CancellationToken>()).Returns([]);
 
-		var result = await service.ValidateConfig(desired);
+		var result = await service.ValidateConfig(desired, TestContext.Current.CancellationToken);
 
 		result.IsValid.ShouldBeTrue();
 		await client.Received(1).StartTransactionAsync(10, Arg.Any<CancellationToken>());
@@ -141,7 +141,7 @@ public class HaproxyServiceTests : IDisposable
 		client.GetBackendsAsync(null, true, Arg.Any<CancellationToken>()).Returns([new Generated.Backend { Name = "be_new", Mode = Generated.Backend_baseMode.Http }]);
 		client.GetAllServerBackendAsync("be_new", null, Arg.Any<CancellationToken>()).Returns([]);
 
-		var saved = await service.SaveConfig(desired);
+		var saved = await service.SaveConfig(desired, TestContext.Current.CancellationToken);
 
 		await client.Received(1).CreateBackendAsync(
 			Arg.Is<Generated.Backend>(x => x != null && x.Name == "be_new" && x.Adv_check == Generated.Backend_baseAdv_check.TcpCheck),
@@ -197,7 +197,7 @@ public class HaproxyServiceTests : IDisposable
 		]);
 		client.GetAllServerBackendAsync("be_main", "tx-3", Arg.Any<CancellationToken>()).Returns([]);
 
-		var result = await service.ValidateConfig(desired);
+		var result = await service.ValidateConfig(desired, TestContext.Current.CancellationToken);
 
 		result.IsValid.ShouldBeTrue();
 		await client.Received(1).ReplaceBackendAsync(
@@ -302,7 +302,7 @@ public class HaproxyServiceTests : IDisposable
 			},
 		]);
 
-		var result = await service.GetDashboardSnapshot();
+		var result = await service.GetDashboardSnapshot(TestContext.Current.CancellationToken);
 
 		result.Summary.RuntimeStatus.ShouldBe(RuntimeStatus.Down);
 		result.Summary.Routes.Value.ShouldBe(0);
@@ -330,8 +330,8 @@ public class HaproxyServiceTests : IDisposable
 		});
 		client.GetStatsAsync(null, null, null, Arg.Any<CancellationToken>()).Returns(new Generated.Native_stats());
 
-		var first = await service.GetDashboardSnapshot();
-		var second = await service.GetDashboardSnapshot();
+		var first = await service.GetDashboardSnapshot(TestContext.Current.CancellationToken);
+		var second = await service.GetDashboardSnapshot(TestContext.Current.CancellationToken);
 
 		second.ShouldBeSameAs(first);
 		await client.Received(1).GetHealthAsync(Arg.Any<CancellationToken>());
@@ -350,9 +350,9 @@ public class HaproxyServiceTests : IDisposable
 			new Generated.Health { Haproxy = Generated.HealthHaproxy.Down });
 		client.GetStatsAsync(null, null, null, Arg.Any<CancellationToken>()).Returns(new Generated.Native_stats());
 
-		var cached = await service.GetDashboardSnapshot();
-		var refreshed = await service.RefreshDashboardSnapshot();
-		var cachedAfterRefresh = await service.GetDashboardSnapshot();
+		var cached = await service.GetDashboardSnapshot(TestContext.Current.CancellationToken);
+		var refreshed = await service.RefreshDashboardSnapshot(TestContext.Current.CancellationToken);
+		var cachedAfterRefresh = await service.GetDashboardSnapshot(TestContext.Current.CancellationToken);
 
 		cached.Summary.RuntimeStatus.ShouldBe(RuntimeStatus.Up);
 		refreshed.Summary.RuntimeStatus.ShouldBe(RuntimeStatus.Down);
@@ -383,9 +383,9 @@ public class HaproxyServiceTests : IDisposable
 		});
 		client.GetStatsAsync(null, null, null, Arg.Any<CancellationToken>()).Returns(new Generated.Native_stats());
 
-		var olderLoad = service.GetDashboardSnapshot();
+		var olderLoad = service.GetDashboardSnapshot(TestContext.Current.CancellationToken);
 		await firstLoadStarted.Task;
-		var refresh = service.RefreshDashboardSnapshot();
+		var refresh = service.RefreshDashboardSnapshot(TestContext.Current.CancellationToken);
 		releaseFirstLoad.SetResult();
 
 		(await olderLoad).Summary.RuntimeStatus.ShouldBe(RuntimeStatus.Up);
@@ -409,11 +409,11 @@ public class HaproxyServiceTests : IDisposable
 		});
 		client.GetStatsAsync(null, null, null, Arg.Any<CancellationToken>()).Returns(new Generated.Native_stats());
 
-		await service.GetDashboardSnapshot();
+		await service.GetDashboardSnapshot(TestContext.Current.CancellationToken);
 		client.ClearReceivedCalls();
 
-		await service.SaveConfig(desired);
-		await service.GetDashboardSnapshot();
+		await service.SaveConfig(desired, TestContext.Current.CancellationToken);
+		await service.GetDashboardSnapshot(TestContext.Current.CancellationToken);
 
 		await client.Received(1).GetHealthAsync(Arg.Any<CancellationToken>());
 		await client.Received(1).GetStatsAsync(null, null, null, Arg.Any<CancellationToken>());
@@ -481,7 +481,7 @@ public class HaproxyServiceTests : IDisposable
 			},
 		]);
 
-		var backend = (await service.GetConfig()).Backends.Single();
+		var backend = (await service.GetConfig(TestContext.Current.CancellationToken)).Backends.Single();
 
 		backend.Extra.ShouldBe("""{"connect_timeout":4000,"retries":5}""");
 		backend.DefaultServer.ShouldNotBeNull();
@@ -540,7 +540,7 @@ public class HaproxyServiceTests : IDisposable
 		]);
 		StubReload(client, 21);
 
-		await service.SaveConfig(desired);
+		await service.SaveConfig(desired, TestContext.Current.CancellationToken);
 
 		await client.Received(1).ReplaceBackendAsync(
 			"be_main",
@@ -580,7 +580,7 @@ public class HaproxyServiceTests : IDisposable
 		client.GetAllServerBackendAsync("be_main", "tx-5", Arg.Any<CancellationToken>()).Returns([]);
 		StubReload(client, 20);
 
-		await service.SaveConfig(desired);
+		await service.SaveConfig(desired, TestContext.Current.CancellationToken);
 
 		await client.DidNotReceive().ReplaceBackendAsync(
 			Arg.Any<string>(),
@@ -645,7 +645,7 @@ public class HaproxyServiceTests : IDisposable
 			Backends = [new HaproxyBackendResource { Name = "be_main", Mode = "tcp", Extra = """{"external_check_command":"/usr/bin/check"}""" }],
 		};
 
-		await service.SaveConfig(untouched);
+		await service.SaveConfig(untouched, TestContext.Current.CancellationToken);
 
 		await client.Received(1).ReplaceBackendAsync(
 			"be_main",
@@ -679,7 +679,7 @@ public class HaproxyServiceTests : IDisposable
 				new Dictionary<string, IEnumerable<string>>(),
 				null)));
 
-		var result = await service.GetConfig();
+		var result = await service.GetConfig(TestContext.Current.CancellationToken);
 
 		result.Backends.Single().Name.ShouldBe("be_empty");
 		result.Backends.Single().Servers.ShouldBeEmpty();
@@ -865,7 +865,7 @@ public class HaproxyServiceTests : IDisposable
 		client.GetAllServerBackendAsync(Arg.Any<string>(), null, Arg.Any<CancellationToken>())
 			.Returns(_ => TrackRead<Generated.Server>([new Generated.Server { Name = "server" }]));
 
-		var result = await service.GetConfig();
+		var result = await service.GetConfig(TestContext.Current.CancellationToken);
 
 		maximumReads.ShouldBeLessThanOrEqualTo(8);
 		maximumReads.ShouldBeGreaterThan(1);
@@ -899,7 +899,7 @@ public class HaproxyServiceTests : IDisposable
 		});
 
 		var operation = service.GetConfig(cancellation.Token);
-		var propagatedToken = await readStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+		var propagatedToken = await readStarted.Task.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
 		cancellation.Cancel();
 
 		await Should.ThrowAsync<OperationCanceledException>(async () =>
@@ -936,7 +936,7 @@ public class HaproxyServiceTests : IDisposable
 				Global = new HaproxyGlobalResource { Daemon = true },
 			},
 			cancellation.Token);
-		await writeStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+		await writeStarted.Task.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
 		cancellation.Cancel();
 
 		await Should.ThrowAsync<OperationCanceledException>(async () =>

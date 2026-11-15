@@ -102,13 +102,13 @@ dotnet build .\Haproxy.Editor.slnx
 ### Run tests
 
 ```powershell
-dotnet test .\Haproxy.Editor.slnx
+dotnet test --solution .\Haproxy.Editor.slnx
 ```
 
 ### Run one backend test
 
 ```powershell
-dotnet test .\Haproxy.Editor.Api\Haproxy.Editor.Core.Tests\Haproxy.Editor.Core.Tests.csproj --filter "FullyQualifiedName~HaproxyServiceTests.SaveConfig_commits_transaction_after_resource_creation"
+dotnet test --project .\Haproxy.Editor.Api\Haproxy.Editor.Core.Tests\Haproxy.Editor.Core.Tests.csproj --filter-method "*HaproxyServiceTests.SaveConfig_commits_transaction_after_resource_creation"
 ```
 
 ## Conventions

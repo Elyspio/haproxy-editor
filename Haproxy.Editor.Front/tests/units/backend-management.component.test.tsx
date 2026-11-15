@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { BackendManagementSection } from "@components/management/BackendManagementSection";
 import type { HaproxyResourceSnapshot } from "@modules/config/config.types";
 import type { DashboardSelection } from "@modules/dashboard/dashboard.types";
@@ -70,8 +70,8 @@ afterEach(() => {
 
 function Harness({ initial = initialSnapshot }: Readonly<{ initial?: HaproxyResourceSnapshot }>) {
 	const [snapshot, setSnapshot] = useState(() => structuredClone(initial));
+	// The mocked navigation hook reads `applicationState`, which `setSelection` keeps in sync.
 	const [selection, setSelectionState] = useState<DashboardSelection>(applicationState.selection);
-	applicationState.selection = selection;
 	const selectedBackend = snapshot.backends.find((backend) => backend.name === selection.backendName) ?? snapshot.backends[0] ?? null;
 
 	const setSelection = (nextSelection: DashboardSelection) => {

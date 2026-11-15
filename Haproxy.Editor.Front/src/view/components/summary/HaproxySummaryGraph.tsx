@@ -131,8 +131,8 @@ function FlowCardNode({ data }: Readonly<{ data: FlowCardData }>) {
 			{data.kind !== "frontend" && <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />}
 			{data.kind !== "server" && data.kind !== "host" && <Handle type="source" position={Position.Right} style={{ opacity: 0 }} />}
 			<Stack spacing={1}>
-				<Stack direction="row" alignItems="center" justifyContent="space-between">
-					<Stack direction="row" alignItems="center" spacing={1}>
+				<Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
+					<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
 						<Avatar sx={{ width: 28, height: 28, bgcolor: alpha(data.accent, 0.2), color: data.accent, fontSize: 13, fontWeight: 700 }}>
 							{data.kind.charAt(0).toUpperCase()}
 						</Avatar>
@@ -143,7 +143,7 @@ function FlowCardNode({ data }: Readonly<{ data: FlowCardData }>) {
 							<Typography variant="subtitle2" sx={{ fontWeight: 700 }} noWrap>
 								{data.title}
 							</Typography>
-							<Typography variant="caption" color="text.secondary" sx={{ display: "block" }} noWrap>
+							<Typography variant="caption" noWrap sx={{ color: "text.secondary", display: "block" }}>
 								{data.subtitle}
 							</Typography>
 						</Box>

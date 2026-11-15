@@ -14,7 +14,7 @@ export function RawView() {
 		<Stack spacing={2} sx={{ height: "100%", minHeight: 0, p: { xs: 1.5, md: 2 }, overflow: "hidden" }}>
 			<Box>
 				<Typography variant="h6">Raw Diagnostics</Typography>
-				<Typography variant="body2" color="text.secondary">
+				<Typography variant="body2" sx={{ color: "text.secondary" }}>
 					Read-only configuration and dashboard runtime snapshots
 				</Typography>
 			</Box>

@@ -31,11 +31,11 @@ public class WebApiIntegrationTests : IAsyncLifetime
 	private HttpClient _adminClient = null!;
 	private Exception? _containerStartupException;
 
-	public async Task InitializeAsync()
+	public async ValueTask InitializeAsync()
 	{
 		try
 		{
-			await _container.StartAsync();
+			await _container.StartAsync(TestContext.Current.CancellationToken);
 			_adminClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{_container.GetMappedPublicPort(8080)}/") };
 			await ConfigureMappings();
 		}
@@ -45,7 +45,7 @@ public class WebApiIntegrationTests : IAsyncLifetime
 		}
 	}
 
-	public async Task DisposeAsync()
+	public async ValueTask DisposeAsync()
 	{
 		_adminClient?.Dispose();
 		await _container.DisposeAsync();
@@ -54,11 +54,13 @@ public class WebApiIntegrationTests : IAsyncLifetime
 	[Fact]
 	public async Task Config_endpoints_work_against_a_testcontainer_backed_data_plane_stub()
 	{
+		var cancellationToken = TestContext.Current.CancellationToken;
+
 		if (_containerStartupException is not null)
 		{
 			if (IsDockerUnavailable(_containerStartupException))
 			{
-				return;
+				Assert.Skip("Docker is required for the Data Plane API stub.");
 			}
 
 			throw new InvalidOperationException("Testcontainer startup failed for a reason other than Docker availability.", _containerStartupException);
@@ -69,26 +71,26 @@ public class WebApiIntegrationTests : IAsyncLifetime
 
 		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("TestScheme");
 
-		var configResponse = await client.GetAsync("/config");
+		var configResponse = await client.GetAsync("/config", cancellationToken);
 		configResponse.StatusCode.ShouldBe(HttpStatusCode.OK, await BuildFailureDetails(configResponse));
 
-		var snapshot = await configResponse.Content.ReadFromJsonAsync<HaproxyResourceSnapshot>();
+		var snapshot = await configResponse.Content.ReadFromJsonAsync<HaproxyResourceSnapshot>(cancellationToken);
 		snapshot.ShouldNotBeNull();
 		snapshot.Version.ShouldBe(1);
 		snapshot.Frontends.Count.ShouldBe(1);
 		snapshot.Backends.Count.ShouldBe(1);
 
-		var validateResponse = await client.PostAsJsonAsync("/config/validate", snapshot);
+		var validateResponse = await client.PostAsJsonAsync("/config/validate", snapshot, cancellationToken);
 		validateResponse.StatusCode.ShouldBe(
 			HttpStatusCode.NoContent,
 			await BuildFailureDetails(validateResponse));
 
-		var dashboardResponse = await client.GetAsync("/dashboard");
+		var dashboardResponse = await client.GetAsync("/dashboard", cancellationToken);
 		dashboardResponse.StatusCode.ShouldBe(
 			HttpStatusCode.OK,
 			await BuildFailureDetails(dashboardResponse));
 
-		var dashboard = await dashboardResponse.Content.ReadFromJsonAsync<DashboardSnapshot>();
+		var dashboard = await dashboardResponse.Content.ReadFromJsonAsync<DashboardSnapshot>(cancellationToken);
 		dashboard.ShouldNotBeNull();
 		dashboard.Summary.RuntimeStatus.ShouldBe(RuntimeStatus.Up);
 		dashboard.Backends.Count.ShouldBe(1);
@@ -108,15 +110,17 @@ public class WebApiIntegrationTests : IAsyncLifetime
 	[Fact]
 	public async Task Schema_endpoint_advertises_advanced_fields_and_marks_the_dangerous_ones_read_only()
 	{
+		var cancellationToken = TestContext.Current.CancellationToken;
+
 		await using var factory = new TestWebApplicationFactory(1);
 		using var client = factory.CreateClient();
 
 		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("TestScheme");
 
-		var response = await client.GetAsync("/schema");
+		var response = await client.GetAsync("/schema", cancellationToken);
 		response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-		var schema = await response.Content.ReadFromJsonAsync<HaproxySchema>();
+		var schema = await response.Content.ReadFromJsonAsync<HaproxySchema>(cancellationToken);
 		schema.ShouldNotBeNull();
 
 		var backend = schema.Sections.Single(section => section.Name == HaproxySchemaSections.Backend);
@@ -144,16 +148,18 @@ public class WebApiIntegrationTests : IAsyncLifetime
 	[Fact]
 	public async Task Mcp_publishes_protected_resource_metadata_and_challenges_unauthenticated_clients()
 	{
+		var cancellationToken = TestContext.Current.CancellationToken;
+
 		await using var factory = new TestWebApplicationFactory(1);
 		using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
 		{
 			AllowAutoRedirect = false,
 		});
 
-		var metadataResponse = await client.GetAsync("/.well-known/oauth-protected-resource/mcp");
+		var metadataResponse = await client.GetAsync("/.well-known/oauth-protected-resource/mcp", cancellationToken);
 		metadataResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-		using var metadata = JsonDocument.Parse(await metadataResponse.Content.ReadAsStringAsync());
+		using var metadata = JsonDocument.Parse(await metadataResponse.Content.ReadAsStringAsync(cancellationToken));
 		metadata.RootElement.GetProperty("resource").GetString()
 			.ShouldBe("https://api.haproxy.system.elylan/mcp");
 		metadata.RootElement.GetProperty("authorization_servers")[0].GetString()
@@ -165,7 +171,7 @@ public class WebApiIntegrationTests : IAsyncLifetime
 		var mcpResponse = await client.PostAsync("/mcp", new StringContent(
 			"""{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}""",
 			Encoding.UTF8,
-			"application/json"));
+			"application/json"), cancellationToken);
 		mcpResponse.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
 		mcpResponse.Headers.WwwAuthenticate.Single().ToString().ShouldBe(
 			"Bearer resource_metadata=\"https://api.haproxy.system.elylan/.well-known/oauth-protected-resource/mcp\", scope=\"haproxy:quickmap:manage\"");

@@ -15,7 +15,7 @@ export function FlowDashboard() {
 		<Stack spacing={2} sx={{ height: "100%", minHeight: 0, p: { xs: 1.5, md: 2 }, overflow: "hidden" }}>
 			<Box>
 				<Typography variant="h6">Flow</Typography>
-				<Typography variant="body2" color="text.secondary">
+				<Typography variant="body2" sx={{ color: "text.secondary" }}>
 					Dedicated runtime topology view with {alerts.length} active alerts
 				</Typography>
 			</Box>
@@ -23,14 +23,12 @@ export function FlowDashboard() {
 			<Paper sx={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 				<Stack
 					direction={{ xs: "column", md: "row" }}
-					justifyContent="space-between"
-					alignItems={{ xs: "flex-start", md: "center" }}
 					spacing={1.5}
-					sx={{ px: 2.25, py: 1.75, borderBottom: `1px solid ${theme.palette.divider}` }}
+					sx={{ justifyContent: "space-between", alignItems: { xs: "flex-start", md: "center" }, px: 2.25, py: 1.75, borderBottom: `1px solid ${theme.palette.divider}` }}
 				>
 					<Box>
 						<Typography variant="h6">Topology Workspace</Typography>
-						<Typography variant="body2" color="text.secondary">
+						<Typography variant="body2" sx={{ color: "text.secondary" }}>
 							Runtime {summary?.runtimeStatus ?? "loading"} · Generated {summary ? new Date(summary.generatedAt).toLocaleTimeString() : "--"}
 						</Typography>
 					</Box>

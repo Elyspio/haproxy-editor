@@ -19,10 +19,10 @@ export function GlobalConfigSection({ snapshot, updateSnapshot, focused }: Reado
 				<Box sx={{ p: 2, overflow: "auto" }}>
 					<SectionHeader title="Editor" />
 					<Stack spacing={2}>
-						<Stack direction="row" justifyContent="space-between" alignItems="center">
+						<Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }}>
 							<Box>
 								<Typography variant="body1">Daemon mode</Typography>
-								<Typography variant="body2" color="text.secondary">
+								<Typography variant="body2" sx={{ color: "text.secondary" }}>
 									Control HAProxy process backgrounding
 								</Typography>
 							</Box>

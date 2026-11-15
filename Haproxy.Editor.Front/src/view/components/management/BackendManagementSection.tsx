@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
-import { Add, ArrowBack, Close, DeleteOutline, DnsOutlined, KeyboardCommandKey, SettingsOutlined, TuneOutlined } from "@mui/icons-material";
+import { Add, ArrowBack, Close, DeleteOutlined, DnsOutlined, KeyboardCommandKey, SettingsOutlined, TuneOutlined } from "@mui/icons-material";
 import {
 	Autocomplete,
 	Box,
@@ -176,7 +176,7 @@ function runtimeDotColor(status: string | undefined): string {
 
 function ParameterLabel({ children }: Readonly<{ children: string }>) {
 	return (
-		<Typography variant="caption" color="text.disabled" sx={{ fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+		<Typography variant="caption" sx={{ color: "text.disabled", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
 			{children}
 		</Typography>
 	);
@@ -246,6 +246,12 @@ export function BackendManagementSection({
 	const [drawerOpen, setDrawerOpen] = useState(isDesktop);
 	const [drawerWidth, setDrawerWidth] = useState(DRAWER_INITIAL_WIDTH);
 	const [backendNameDraft, setBackendNameDraft] = useState(selectedBackend?.name ?? "");
+	const [backendNameDraftSource, setBackendNameDraftSource] = useState(selectedBackend?.name);
+	// Restart the name draft whenever another backend (or a renamed one) is selected.
+	if (backendNameDraftSource !== selectedBackend?.name) {
+		setBackendNameDraftSource(selectedBackend?.name);
+		setBackendNameDraft(selectedBackend?.name ?? "");
+	}
 
 	const backendIndex = selectedBackend ? snapshot.backends.indexOf(selectedBackend) : -1;
 	const selectedServerIndex = selectedBackend?.servers.findIndex((server) => server.name === selection.serverName) ?? -1;
@@ -261,12 +267,8 @@ export function BackendManagementSection({
 	const hasLocalErrors = validationErrorCount > 0 || Boolean(backendNameDraftError);
 	const backendExtras = useMemo(
 		() => Object.entries(parseExtra(selectedBackend?.extra ?? null)).filter(([, value]) => typeof value !== "object" || value === null),
-		[selectedBackend?.extra],
+		[selectedBackend?.extra]
 	);
-
-	useEffect(() => {
-		setBackendNameDraft(selectedBackend?.name ?? "");
-	}, [selectedBackend?.name]);
 
 	useEffect(() => {
 		if (previousDesktopRef.current === isDesktop) return;
@@ -310,7 +312,7 @@ export function BackendManagementSection({
 			});
 			setSelectorOpen(false);
 		},
-		[frontendContext?.name, setSelection, shouldFilterBackendPanel],
+		[frontendContext?.name, setSelection, shouldFilterBackendPanel]
 	);
 
 	const updateDefaultServer = (patch: Partial<HaproxyDefaultServerResource>) => {
@@ -439,7 +441,7 @@ export function BackendManagementSection({
 
 	const closeDrawer = () => setDrawerOpen(false);
 
-	const startResize = (event: ReactPointerEvent<HTMLDivElement>) => {
+	const startResize = (event: ReactPointerEvent<HTMLHRElement>) => {
 		const startX = event.clientX;
 		const startWidth = drawerWidth;
 		const resize = (pointerEvent: PointerEvent) => {
@@ -453,7 +455,7 @@ export function BackendManagementSection({
 		window.addEventListener("pointerup", stop);
 	};
 
-	const resizeWithKeyboard = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+	const resizeWithKeyboard = (event: ReactKeyboardEvent<HTMLHRElement>) => {
 		if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
 		event.preventDefault();
 		const delta = event.key === "ArrowLeft" ? 16 : -16;
@@ -473,8 +475,8 @@ export function BackendManagementSection({
 
 	const drawerContent = selectedBackend ? (
 		<Box sx={{ height: "100%", minHeight: 0, display: "flex", flexDirection: "column", backgroundColor: alpha(theme.palette.background.default, 0.48) }}>
-			<Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1} sx={{ px: 2, py: 1.5 }}>
-				<Stack direction="row" alignItems="center" spacing={1} minWidth={0}>
+			<Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "space-between", px: 2, py: 1.5 }}>
+				<Stack direction="row" spacing={1} sx={{ alignItems: "center", minWidth: 0 }}>
 					{selectedServer ? (
 						<Tooltip title="Back to backend settings" arrow>
 							<IconButton size="small" onClick={showBackendDrawer} aria-label="Back to backend settings">
@@ -482,12 +484,12 @@ export function BackendManagementSection({
 							</IconButton>
 						</Tooltip>
 					) : null}
-					<Box minWidth={0}>
-						<Typography variant="subtitle1" fontWeight={700} noWrap>
+					<Box sx={{ minWidth: 0 }}>
+						<Typography variant="subtitle1" noWrap sx={{ fontWeight: 700 }}>
 							{selectedServer ? "Server settings" : "Backend settings"}
 						</Typography>
 						{selectedServer ? (
-							<Typography variant="caption" color="text.secondary" noWrap display="block">
+							<Typography variant="caption" noWrap sx={{ color: "text.secondary", display: "block" }}>
 								{selectedServer.name}
 							</Typography>
 						) : null}
@@ -625,7 +627,7 @@ export function BackendManagementSection({
 								<MenuItem key={option.value} value={option.value}>
 									<Stack>
 										<Typography variant="body2">{option.label}</Typography>
-										<Typography variant="caption" color="text.secondary">
+										<Typography variant="caption" sx={{ color: "text.secondary" }}>
 											{option.description}
 										</Typography>
 									</Stack>
@@ -727,17 +729,17 @@ export function BackendManagementSection({
 		>
 			<Stack
 				direction={{ xs: "column", md: "row" }}
-				alignItems={{ xs: "stretch", md: "center" }}
-				justifyContent="space-between"
 				spacing={1.5}
 				sx={{
+					alignItems: { xs: "stretch", md: "center" },
+					justifyContent: "space-between",
 					px: 2,
 					py: 1.25,
 					borderBottom: `1px solid ${alpha(theme.palette.primary.main, focused ? 0.28 : 0.12)}`,
 					background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.14)}, ${alpha(theme.palette.background.paper, 0.92)})`,
 				}}
 			>
-				<Stack direction="row" alignItems="center" spacing={1.25} minWidth={0} flexWrap="wrap" useFlexGap>
+				<Stack direction="row" spacing={1.25} useFlexGap sx={{ alignItems: "center", minWidth: 0, flexWrap: "wrap" }}>
 					<Box
 						sx={{
 							width: 32,
@@ -772,12 +774,12 @@ export function BackendManagementSection({
 							const runtime = runtimeBackends.find((item) => item.name === backend.name);
 							return (
 								<Box component="li" {...props} key={backend.name} data-testid={`backend-item-${backend.name}`}>
-									<Stack direction="row" alignItems="center" justifyContent="space-between" width="100%" spacing={2}>
+									<Stack direction="row" spacing={2} sx={{ alignItems: "center", justifyContent: "space-between", width: "100%" }}>
 										<Box>
-											<Typography variant="body2" fontWeight={700}>
+											<Typography variant="body2" sx={{ fontWeight: 700 }}>
 												{backend.name}
 											</Typography>
-											<Typography variant="caption" color="text.secondary">
+											<Typography variant="caption" sx={{ color: "text.secondary" }}>
 												{resolveBackendMode(backend, snapshot) ?? "no mode"} · {backend.servers.length} servers
 											</Typography>
 										</Box>
@@ -790,14 +792,14 @@ export function BackendManagementSection({
 							<TextField
 								{...params}
 								inputRef={selectorInputRef}
-								inputProps={{ ...params.inputProps, "aria-label": "Select a backend" }}
 								size="small"
 								placeholder="Select a backend"
 								data-testid="backend-selector"
+								slotProps={{ ...params.slotProps, htmlInput: { ...params.slotProps.htmlInput, "aria-label": "Select a backend" } }}
 							/>
 						)}
 					/>
-					<Stack direction="row" alignItems="center" spacing={0.5} sx={{ color: "text.disabled", display: { xs: "none", xl: "flex" } }}>
+					<Stack direction="row" spacing={0.5} sx={{ alignItems: "center", color: "text.disabled", display: { xs: "none", xl: "flex" } }}>
 						<KeyboardCommandKey sx={{ fontSize: 15 }} />
 						<Typography variant="caption">K to switch</Typography>
 					</Stack>
@@ -812,11 +814,11 @@ export function BackendManagementSection({
 					{shouldFilterBackendPanel && frontendContext ? <Chip size="small" variant="outlined" label={`Linked to ${frontendContext.name}`} /> : null}
 				</Stack>
 
-				<Stack direction="row" alignItems="center" spacing={1} justifyContent={{ xs: "flex-end", md: "initial" }}>
+				<Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: { xs: "flex-end", md: "initial" } }}>
 					<Button size="small" variant="contained" startIcon={<Add fontSize="small" />} onClick={createBackend}>
 						Create
 					</Button>
-					<Button size="small" color="error" variant="outlined" startIcon={<DeleteOutline fontSize="small" />} disabled={!selectedBackend} onClick={deleteBackend}>
+					<Button size="small" color="error" variant="outlined" startIcon={<DeleteOutlined fontSize="small" />} disabled={!selectedBackend} onClick={deleteBackend}>
 						Delete
 					</Button>
 					<Divider orientation="vertical" flexItem />
@@ -827,9 +829,9 @@ export function BackendManagementSection({
 			{selectedBackend ? (
 				<Stack
 					direction="row"
-					alignItems="center"
 					spacing={1.25}
 					sx={{
+						alignItems: "center",
 						px: 2,
 						py: 1.1,
 						minHeight: 54,
@@ -862,8 +864,8 @@ export function BackendManagementSection({
 				<Box sx={{ flex: 1, minWidth: 0, overflow: "auto", p: { xs: 1.5, md: 2 } }}>
 					{selectedBackend ? (
 						<Stack spacing={1.25}>
-							<Stack direction="row" alignItems="center" justifyContent="space-between">
-								<Stack direction="row" alignItems="center" spacing={1}>
+							<Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
+								<Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
 									<Typography variant="subtitle2">Server pool</Typography>
 									<Chip size="small" label={selectedBackend.servers.length} />
 								</Stack>
@@ -911,8 +913,8 @@ export function BackendManagementSection({
 															error={Boolean(validationErrors[`${path}.name`])}
 															helperText={validationErrors[`${path}.name`]}
 															onChange={(event) => updateServer(serverIndex, { name: event.target.value })}
-															inputProps={{ "aria-label": `Server ${serverIndex + 1} name` }}
 															sx={{ ...tableFieldSx, minWidth: 170 }}
+															slotProps={{ htmlInput: { "aria-label": `Server ${serverIndex + 1} name` } }}
 														/>
 													</TableCell>
 													<TableCell>
@@ -922,8 +924,8 @@ export function BackendManagementSection({
 															error={Boolean(validationErrors[`${path}.address`])}
 															helperText={validationErrors[`${path}.address`]}
 															onChange={(event) => updateServer(serverIndex, { address: event.target.value || null })}
-															inputProps={{ "aria-label": `Server ${serverIndex + 1} address` }}
 															sx={{ ...tableFieldSx, minWidth: 150 }}
+															slotProps={{ htmlInput: { "aria-label": `Server ${serverIndex + 1} address` } }}
 														/>
 													</TableCell>
 													<TableCell>
@@ -934,8 +936,8 @@ export function BackendManagementSection({
 															error={Boolean(validationErrors[`${path}.port`])}
 															helperText={validationErrors[`${path}.port`]}
 															onChange={(event) => updateServer(serverIndex, { port: event.target.value === "" ? null : Number(event.target.value) })}
-															inputProps={{ "aria-label": `Server ${serverIndex + 1} port` }}
 															sx={{ ...tableFieldSx, minWidth: 82 }}
+															slotProps={{ htmlInput: { "aria-label": `Server ${serverIndex + 1} port` } }}
 														/>
 													</TableCell>
 													<TableCell>
@@ -944,8 +946,8 @@ export function BackendManagementSection({
 															select
 															value={server.check ?? "disabled"}
 															onChange={(event) => updateServer(serverIndex, { check: event.target.value || null })}
-															SelectProps={{ inputProps: { "aria-label": `Server ${serverIndex + 1} check` } }}
 															sx={tableFieldSx}
+															slotProps={{ select: { inputProps: { "aria-label": `Server ${serverIndex + 1} check` } } }}
 														>
 															{SERVER_CHECK_OPTIONS.map((option) => (
 																<MenuItem key={option.value} value={option.value}>
@@ -961,8 +963,8 @@ export function BackendManagementSection({
 															data-testid={`server-ssl-${serverIndex}`}
 															value={server.ssl ?? ""}
 															onChange={(event) => updateServer(serverIndex, { ssl: event.target.value || null })}
-															SelectProps={{ inputProps: { "aria-label": `Server ${serverIndex + 1} TLS` } }}
 															sx={tableFieldSx}
+															slotProps={{ select: { inputProps: { "aria-label": `Server ${serverIndex + 1} TLS` } } }}
 														>
 															{SERVER_SSL_OPTIONS.map((option) => (
 																<MenuItem key={option.label} value={option.value}>
@@ -978,8 +980,8 @@ export function BackendManagementSection({
 															data-testid={`server-verify-${serverIndex}`}
 															value={server.verify ?? ""}
 															onChange={(event) => updateServer(serverIndex, { verify: event.target.value || null })}
-															SelectProps={{ inputProps: { "aria-label": `Server ${serverIndex + 1} verify` } }}
 															sx={tableFieldSx}
+															slotProps={{ select: { inputProps: { "aria-label": `Server ${serverIndex + 1} verify` } } }}
 														>
 															{SERVER_VERIFY_OPTIONS.map((option) => (
 																<MenuItem key={option.label} value={option.value}>
@@ -1004,7 +1006,7 @@ export function BackendManagementSection({
 														</Tooltip>
 														<Tooltip title="Delete server" arrow>
 															<IconButton size="small" color="error" aria-label={`Delete ${server.name}`} onClick={() => removeServer(serverIndex)}>
-																<DeleteOutline fontSize="small" />
+																<DeleteOutlined fontSize="small" />
 															</IconButton>
 														</Tooltip>
 													</TableCell>
@@ -1020,10 +1022,10 @@ export function BackendManagementSection({
 						</Stack>
 					) : (
 						<Box sx={{ height: "100%", display: "grid", placeItems: "center", textAlign: "center", px: 3 }}>
-							<Stack spacing={1.5} alignItems="center">
+							<Stack spacing={1.5} sx={{ alignItems: "center" }}>
 								<DnsOutlined color="disabled" sx={{ fontSize: 46 }} />
 								<Typography variant="h6">No backend selected</Typography>
-								<Typography color="text.secondary">
+								<Typography sx={{ color: "text.secondary" }}>
 									{shouldFilterBackendPanel && frontendContext
 										? `No backend is linked from ${frontendContext.name}.`
 										: "Create a backend to start building a server pool."}
@@ -1039,7 +1041,7 @@ export function BackendManagementSection({
 				{isDesktop && drawerOpen && drawerContent ? (
 					<>
 						<Box
-							role="separator"
+							component="hr"
 							aria-label="Resize settings panel"
 							aria-orientation="vertical"
 							aria-valuemin={DRAWER_MIN_WIDTH}
@@ -1049,6 +1051,8 @@ export function BackendManagementSection({
 							onPointerDown={startResize}
 							onKeyDown={resizeWithKeyboard}
 							sx={{
+								m: 0,
+								border: 0,
 								width: 7,
 								flex: "0 0 7px",
 								cursor: "col-resize",
@@ -1078,12 +1082,17 @@ export function BackendManagementSection({
 
 			<Stack
 				direction={{ xs: "column", sm: "row" }}
-				alignItems={{ xs: "stretch", sm: "center" }}
-				justifyContent="space-between"
 				spacing={1}
-				sx={{ px: 2, py: 1.1, borderTop: `1px solid ${theme.palette.divider}`, backgroundColor: alpha(theme.palette.background.paper, 0.92) }}
+				sx={{
+					alignItems: { xs: "stretch", sm: "center" },
+					justifyContent: "space-between",
+					px: 2,
+					py: 1.1,
+					borderTop: `1px solid ${theme.palette.divider}`,
+					backgroundColor: alpha(theme.palette.background.paper, 0.92),
+				}}
 			>
-				<Stack direction="row" alignItems="center" spacing={1} minWidth={0}>
+				<Stack direction="row" spacing={1} sx={{ alignItems: "center", minWidth: 0 }}>
 					<Box sx={{ width: 8, height: 8, borderRadius: "50%", flex: "0 0 auto", backgroundColor: hasUnsavedChanges ? "warning.main" : "success.main" }} />
 					<Typography variant="body2" color={hasUnsavedChanges ? "text.primary" : "text.secondary"}>
 						{hasUnsavedChanges ? "Unsaved changes" : "All changes saved"}
