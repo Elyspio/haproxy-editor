@@ -1,6 +1,5 @@
+using Elyspio.Utils.Telemetry;
 using System.Security.Claims;
-using Elyspio.Utils.Telemetry.Technical.Helpers;
-using Elyspio.Utils.Telemetry.Tracing.Elements;
 using Haproxy.Editor.Abstractions.Data;
 using Haproxy.Editor.Abstractions.Exceptions;
 using Haproxy.Editor.Abstractions.Interfaces.Services;
@@ -12,26 +11,26 @@ namespace Haproxy.Editor.Mcp;
 public sealed class QuickmapMcpTools(
 	IExposureService exposureService,
 	IHttpContextAccessor httpContextAccessor,
-	ILogger<QuickmapMcpTools> logger) : TracingService(logger)
+	ILogger<QuickmapMcpTools> logger)
 {
 	[McpServerTool(Name = "haproxy-editor_discover", Title = "Discover HAProxy routing targets", ReadOnly = true)]
 	public async Task<QuickmapToolResult<ExposureDiscoveryResource>> Discover(CancellationToken cancellationToken = default)
 	{
-		using var trace = LogService();
+		using var trace = logger.Trace();
 		return await Execute(exposureService.Discover, cancellationToken);
 	}
 
 	[McpServerTool(Name = "haproxy-editor_list", Title = "List HAProxy mappings", ReadOnly = true)]
 	public async Task<QuickmapToolResult<IReadOnlyCollection<ExposureResource>>> List(CancellationToken cancellationToken = default)
 	{
-		using var trace = LogService();
+		using var trace = logger.Trace();
 		return await Execute(exposureService.List, cancellationToken);
 	}
 
 	[McpServerTool(Name = "haproxy-editor_get", Title = "Get an HAProxy mapping", ReadOnly = true)]
 	public async Task<QuickmapToolResult<ExposureResource>> Get(Guid id, CancellationToken cancellationToken = default)
 	{
-		using var trace = LogService($"{Log.F(id)}");
+		using var trace = logger.Trace($"{Log.F(id)}");
 		try
 		{
 			var mapping = await exposureService.Get(id, cancellationToken);
@@ -50,14 +49,14 @@ public sealed class QuickmapMcpTools(
 	[McpServerTool(Name = "haproxy-editor_create", Title = "Create an HAProxy mapping", Destructive = true)]
 	public async Task<QuickmapToolResult<ExposureResource>> Create(ExposureUpsertRequest request, CancellationToken cancellationToken = default)
 	{
-		using var trace = LogService($"{Log.F(request.FrontendName)} {Log.F(request.BackendName)}");
+		using var trace = logger.Trace($"{Log.F(request.FrontendName)} {Log.F(request.BackendName)}");
 		return await Execute(token => exposureService.Create(GetOwner(), GetSubject(), request, token), cancellationToken);
 	}
 
 	[McpServerTool(Name = "haproxy-editor_update", Title = "Update an HAProxy mapping", Destructive = true)]
 	public async Task<QuickmapToolResult<ExposureResource>> Update(Guid id, ExposureUpsertRequest request, CancellationToken cancellationToken = default)
 	{
-		using var trace = LogService($"{Log.F(id)} {Log.F(request.FrontendName)} {Log.F(request.BackendName)}");
+		using var trace = logger.Trace($"{Log.F(id)} {Log.F(request.FrontendName)} {Log.F(request.BackendName)}");
 		try
 		{
 			var mapping = await exposureService.Replace(GetOwner(), GetSubject(), id, request, cancellationToken);
@@ -76,7 +75,7 @@ public sealed class QuickmapMcpTools(
 	[McpServerTool(Name = "haproxy-editor_delete", Title = "Delete an HAProxy mapping", Destructive = true)]
 	public async Task<QuickmapToolResult<object>> Delete(Guid id, CancellationToken cancellationToken = default)
 	{
-		using var trace = LogService($"{Log.F(id)}");
+		using var trace = logger.Trace($"{Log.F(id)}");
 		try
 		{
 			return await exposureService.Delete(GetOwner(), id, cancellationToken)

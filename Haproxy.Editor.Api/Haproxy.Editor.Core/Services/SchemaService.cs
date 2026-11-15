@@ -1,4 +1,4 @@
-using Elyspio.Utils.Telemetry.Tracing.Elements;
+using Elyspio.Utils.Telemetry;
 using Haproxy.Editor.Abstractions.Data;
 using Haproxy.Editor.Abstractions.Exceptions;
 using Haproxy.Editor.Abstractions.Interfaces.Services;
@@ -13,7 +13,7 @@ namespace Haproxy.Editor.Core.Services;
 ///     Derives the advanced-field catalogue from the generated Data Plane client by reflection, so it cannot drift from
 ///     the client the writes actually go through.
 /// </summary>
-public sealed class SchemaService(ILogger<SchemaService> logger) : TracingService(logger), ISchemaService
+public sealed class SchemaService(ILogger<SchemaService> logger) : ISchemaService
 {
 	private static readonly Lazy<HaproxySchema> Schema = new(Build, LazyThreadSafetyMode.ExecutionAndPublication);
 
@@ -35,7 +35,7 @@ public sealed class SchemaService(ILogger<SchemaService> logger) : TracingServic
 
 	public HaproxySchema GetSchema()
 	{
-		using var _ = LogService();
+		using var _ = logger.Trace();
 		return Schema.Value;
 	}
 

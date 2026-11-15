@@ -1,5 +1,4 @@
-using Elyspio.Utils.Telemetry.Technical.Helpers;
-using Elyspio.Utils.Telemetry.Tracing.Elements;
+using Elyspio.Utils.Telemetry;
 using Haproxy.Editor.Abstractions.Data;
 using Haproxy.Editor.Abstractions.Exceptions;
 using Haproxy.Editor.Abstractions.Interfaces.Services;
@@ -12,11 +11,11 @@ public sealed class ExposureService(
 	IHaproxyService haproxyService,
 	IExposureRepository repository,
 	IExposureMutationLock mutationLock,
-	ILogger<ExposureService> logger) : TracingService(logger), IExposureService
+	ILogger<ExposureService> logger) : IExposureService
 {
 	public async Task<ExposureResource> Create(string ownerClientId, string? subjectId, ExposureUpsertRequest request, CancellationToken cancellationToken = default)
 	{
-		using var trace = LogService($"{Log.F(ownerClientId)} {Log.F(request.FrontendName)} {Log.F(request.BackendName)}");
+		using var trace = logger.Trace($"{Log.F(ownerClientId)} {Log.F(request.FrontendName)} {Log.F(request.BackendName)}");
 
 		await using var lease = await mutationLock.Acquire(cancellationToken);
 		using var operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, lease.LeaseLost);
@@ -46,13 +45,13 @@ public sealed class ExposureService(
 
 	public async Task<IReadOnlyCollection<ExposureResource>> List(CancellationToken cancellationToken = default)
 	{
-		using var trace = LogService();
+		using var trace = logger.Trace();
 		return (await repository.ListAll(cancellationToken)).Select(ToResource).ToArray();
 	}
 
 	public async Task<ExposureResource?> Get(Guid id, CancellationToken cancellationToken = default)
 	{
-		using var trace = LogService($"{Log.F(id)}");
+		using var trace = logger.Trace($"{Log.F(id)}");
 
 		var exposure = await repository.Get(id, cancellationToken);
 		return exposure is null ? null : ToResource(exposure);
@@ -60,7 +59,7 @@ public sealed class ExposureService(
 
 	public async Task<ExposureDiscoveryResource> Discover(CancellationToken cancellationToken = default)
 	{
-		using var trace = LogService();
+		using var trace = logger.Trace();
 
 		var snapshot = await haproxyService.GetConfig(cancellationToken);
 		return new ExposureDiscoveryResource
@@ -76,7 +75,7 @@ public sealed class ExposureService(
 
 	public async Task<ExposureResource?> Replace(string ownerClientId, string? subjectId, Guid id, ExposureUpsertRequest request, CancellationToken cancellationToken = default)
 	{
-		using var trace = LogService($"{Log.F(ownerClientId)} {Log.F(id)} {Log.F(request.FrontendName)} {Log.F(request.BackendName)}");
+		using var trace = logger.Trace($"{Log.F(ownerClientId)} {Log.F(id)} {Log.F(request.FrontendName)} {Log.F(request.BackendName)}");
 
 		await using var lease = await mutationLock.Acquire(cancellationToken);
 		using var operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, lease.LeaseLost);
@@ -111,7 +110,7 @@ public sealed class ExposureService(
 
 	public async Task<bool> Delete(string ownerClientId, Guid id, CancellationToken cancellationToken = default)
 	{
-		using var trace = LogService($"{Log.F(ownerClientId)} {Log.F(id)}");
+		using var trace = logger.Trace($"{Log.F(ownerClientId)} {Log.F(id)}");
 
 		await using var lease = await mutationLock.Acquire(cancellationToken);
 		using var operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, lease.LeaseLost);
